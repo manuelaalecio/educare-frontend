@@ -9,10 +9,12 @@
 		"ignoreUnknown": false,
 		"includes": [
 			"**/src/**/*",
+			"**/scripts/**/*",
 			"**/index.html",
 			"**/vite.config.ts",
 			"**/vitest.config.ts",
 			"!**/src/routeTree.gen.ts",
+			"!**/src/integrations/educare-api/schema.gen.ts",
 			"!**/src/styles.css"
 		]
 	},

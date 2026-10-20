@@ -6,5 +6,8 @@ export default defineConfig({
 	plugins: [viteReact()],
 	test: {
 		environment: "jsdom",
+		env: {
+			EDUCARE_API_URL: "http://localhost:8080",
+		},
 	},
 });

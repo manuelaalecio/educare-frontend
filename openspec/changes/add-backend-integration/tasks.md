@@ -2,12 +2,12 @@
 
 ## 1. Ambiente e dependências
 
-- [ ] 1.1 Instalar `openapi-fetch` (dependência) e `openapi-typescript` (dev) com `npm install`, e verificar que `npm run typecheck` continua passando
-- [ ] 1.2 Atualizar `src/env.ts` (D7): remover `SERVER_URL`, adicionar `EDUCARE_API_URL` com `https` obrigatório em produção, e `runtimeEnv` lendo `process.env` no servidor. Atualizar o `.env.example`. Testes unitários dos cenários "Produção com URL https", "Produção com URL http", "Variável ausente" e "Desenvolvimento com http local"
+- [x] 1.1 Instalar `openapi-fetch` (dependência) e `openapi-typescript` (dev) com `npm install`, e verificar que `npm run typecheck` continua passando
+- [x] 1.2 Atualizar `src/env.ts` (D7): remover `SERVER_URL`, adicionar `EDUCARE_API_URL` com `https` obrigatório em produção, e `runtimeEnv` lendo `process.env` no servidor. Atualizar o `.env.example`. Testes unitários dos cenários "Produção com URL https", "Produção com URL http", "Variável ausente" e "Desenvolvimento com http local"
 
 ## 2. Contrato e tipos gerados
 
-- [ ] 2.1 Criar `scripts/generate-api-types.mjs` e o script `api:generate` (D8). Excluir `src/integrations/educare-api/schema.gen.ts` do Biome. Testes do script: contrato local gera o arquivo ("Contrato local"); contrato inválido ou download com erro sai com código 1 e não altera o arquivo existente ("Falha no download")
+- [x] 2.1 Criar `scripts/generate-api-types.mjs` e o script `api:generate` (D8). Excluir `src/integrations/educare-api/schema.gen.ts` do Biome. Testes do script: contrato local gera o arquivo ("Contrato local"); contrato inválido ou download com erro sai com código 1 e não altera o arquivo existente ("Falha no download")
 - [ ] 2.2 Rodar `API_CONTRACT=../educare-backend/openapi/educare-api.json npm run api:generate` com o contrato da `add-frontend-integration` e commitar o `schema.gen.ts`. Verificar que os tipos de `/api/v1/auth/me` têm `id`, `name`, `login`, `role`, `createdAt` e `updatedAt` obrigatórios e que `npm run typecheck` passa
 
 ## 3. Cliente da API e erros
