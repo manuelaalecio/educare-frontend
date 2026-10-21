@@ -12,5 +12,5 @@
 
 ## 3. Verificação
 
-- [ ] 3.1 Com `npm run dev`, abrir `/login` e conferir: layout nos temas claro e escuro e em largura de celular, erros dos campos vazios e da senha longa, botão desabilitado durante o envio e a mensagem provisória. No DevTools, confirmar que nenhuma requisição vai para `localhost:8080`
+- [x] 3.1 Com `npm run dev`, abrir `/login` e conferir: layout nos temas claro e escuro e em largura de celular, erros dos campos vazios e da senha longa, botão desabilitado durante o envio e a mensagem provisória. No DevTools, confirmar que nenhuma requisição vai para `localhost:8080`
 - [x] 3.2 Rodar `npm run check -- --write`, `npm run typecheck` e `npm test` e verificar que os três terminam sem erro
