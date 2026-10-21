@@ -8,6 +8,7 @@ import {
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
 import { themeScript } from "#/components/theme/theme-script";
 import { ThemeToggle } from "#/components/theme/theme-toggle";
+import { Toaster } from "#/components/ui/sonner";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import appCss from "../styles.css?url";
 
@@ -54,6 +55,7 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 			<body>
 				<ThemeToggle className="fixed top-4 right-4" />
 				{children}
+				<Toaster />
 				<TanStackDevtools
 					config={{
 						position: "bottom-right",

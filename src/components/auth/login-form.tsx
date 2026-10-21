@@ -1,5 +1,5 @@
 import { useForm } from "@tanstack/react-form";
-import { CircleAlert } from "lucide-react";
+import { CircleAlert, Info } from "lucide-react";
 import { useId, useState } from "react";
 import { Alert, AlertDescription } from "#/components/ui/alert";
 import { Button } from "#/components/ui/button";
@@ -17,14 +17,34 @@ import {
 	loginSchema,
 } from "#/integrations/educare-api/validation";
 
-export type LoginResult = { message?: string } | undefined;
+type FieldErrors = Partial<Record<keyof LoginValues, string>>;
+
+export type LoginResult =
+	| {
+			message?: string;
+			/** Erros devolvidos pela API, por campo (`login`, `password`). */
+			fieldErrors?: FieldErrors;
+			/** Limpa só a senha (credenciais inválidas). */
+			clearPassword?: boolean;
+	  }
+	| undefined;
 
 export type LoginFormProps = {
 	onSubmit: (values: LoginValues) => Promise<LoginResult>;
+	/** Aviso acima dos campos, como o de sessão expirada. */
+	notice?: string;
 };
 
-export function LoginForm({ onSubmit }: LoginFormProps) {
+type FieldError = string | { message?: string } | undefined;
+
+function firstError(errors: FieldError[]) {
+	const [error] = errors;
+	return typeof error === "string" ? error : error?.message;
+}
+
+export function LoginForm({ onSubmit, notice }: LoginFormProps) {
 	const [message, setMessage] = useState<string>();
+	const [serverErrors, setServerErrors] = useState<FieldErrors>({});
 	const id = useId();
 
 	const form = useForm({
@@ -32,8 +52,11 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
 		validators: { onSubmit: loginSchema },
 		onSubmit: async ({ value }) => {
 			setMessage(undefined);
+			setServerErrors({});
 			const result = await onSubmit(loginSchema.parse(value));
 			setMessage(result?.message);
+			setServerErrors(result?.fieldErrors ?? {});
+			if (result?.clearPassword) form.setFieldValue("password", "");
 		},
 	});
 
@@ -53,6 +76,13 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
 						form.handleSubmit();
 					}}
 				>
+					{notice && (
+						<Alert>
+							<Info />
+							<AlertDescription>{notice}</AlertDescription>
+						</Alert>
+					)}
+
 					{message && (
 						<Alert variant="destructive">
 							<CircleAlert />
@@ -62,7 +92,8 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
 
 					<form.Field name="login">
 						{(field) => {
-							const error = field.state.meta.errors[0]?.message;
+							const error =
+								firstError(field.state.meta.errors) ?? serverErrors?.login;
 							const errorId = `${id}-login-error`;
 							return (
 								<div className="flex flex-col gap-2">
@@ -74,7 +105,13 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
 										autoComplete="username"
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(event) => field.handleChange(event.target.value)}
+										onChange={(event) => {
+											field.handleChange(event.target.value);
+											setServerErrors((errors) => ({
+												...errors,
+												[field.name]: undefined,
+											}));
+										}}
 										aria-invalid={error ? true : undefined}
 										aria-describedby={error ? errorId : undefined}
 									/>
@@ -90,7 +127,8 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
 
 					<form.Field name="password">
 						{(field) => {
-							const error = field.state.meta.errors[0]?.message;
+							const error =
+								firstError(field.state.meta.errors) ?? serverErrors?.password;
 							const errorId = `${id}-password-error`;
 							return (
 								<div className="flex flex-col gap-2">
@@ -102,7 +140,13 @@ export function LoginForm({ onSubmit }: LoginFormProps) {
 										autoComplete="current-password"
 										value={field.state.value}
 										onBlur={field.handleBlur}
-										onChange={(event) => field.handleChange(event.target.value)}
+										onChange={(event) => {
+											field.handleChange(event.target.value);
+											setServerErrors((errors) => ({
+												...errors,
+												[field.name]: undefined,
+											}));
+										}}
 										aria-invalid={error ? true : undefined}
 										aria-describedby={error ? errorId : undefined}
 									/>
