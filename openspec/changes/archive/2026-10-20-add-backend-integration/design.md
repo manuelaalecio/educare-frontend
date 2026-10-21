@@ -44,16 +44,16 @@ As chamadas à API ficam em `createServerFn` (`@tanstack/react-start`), em `src/
 ### D2. Cliente tipado com `openapi-fetch`
 `createApiClient(token?: string)` cria um cliente `openapi-fetch` tipado pelo `paths` gerado, com `baseUrl = env.EDUCARE_API_URL` (o contrato não declara host, e os caminhos já trazem o `/api/v1`). Esse `fetch`:
 - injeta `Authorization: Bearer <token>` quando há token;
-- aplica `AbortSignal.timeout(10_000)`;
+- aplica um tempo limite de 10 s, com `AbortController` + `setTimeout` (mesmo efeito do `AbortSignal.timeout`, mas testável com timers falsos do Vitest);
 - registra no log só o método, o caminho do template (`/api/v1/auth/me`), o status e a duração, nunca o corpo nem os headers.
 
-O módulo importa `@tanstack/react-start/server-only` (ou equivalente), para que o build falhe se ele for importado no bundle do navegador.
+O módulo importa `@tanstack/react-start/server-only`, para que o build falhe se ele for importado no bundle do navegador. Pelo mesmo motivo, os helpers que usam `@tanstack/react-start/server` (`getCookie`, `setCookie`, `deleteCookie`, `getRequest`) ficam em `request.ts`, importado só dentro de handlers: o `middleware.ts` entra no bundle do navegador (o middleware tem parte de cliente), e um `requestCookies` exportado nele faria a proteção de imports do Start barrar o build.
 
 **Alternativas:** `fetch` puro com tipos à mão (os tipos divergem do backend); geradores de SDK completos (`orval`, `openapi-generator`), que trazem mais código gerado e dependências do que o necessário. `openapi-fetch` + `openapi-typescript` geram só tipos e um wrapper de ~6 kB.
 
 ### D3. Erros: `ApiError` no servidor, resultado serializável na interface
 - O cliente converte respostas não-2xx em `ApiError`, com os tipos `validation` (`400` com `errors` → `fieldErrors: Record<string, string>`), `unauthorized`, `forbidden`, `not-found`, `conflict` e `unavailable` (`5xx`, corpo que não é `ProblemDetail`, falha de rede e timeout). Um corpo é `ProblemDetail` quando é JSON com `title` (string) e `status` (número); a conversão não depende de `type`, `detail` nem `instance`. Sem `detail`, a interface usa a mensagem fixa do tipo de erro.
-- **Formulários** (login, troca de senha): a server function captura o `ApiError` e devolve `{ ok: false, error: { kind, message, fieldErrors } }`, um objeto serializável e sem detalhes internos. O componente distribui `fieldErrors` nos campos do TanStack Form, com `setFieldMeta` / `errorMap.onServer`.
+- **Formulários** (login, troca de senha): a server function captura o `ApiError` e devolve `{ ok: false, kind, message, fieldErrors }`, um objeto plano, serializável e sem detalhes internos (no `401` do login, `kind: "invalid-credentials"`). `message` só existe quando há mensagem geral: um `400` sem `detail` e com erros por campo não tem. O componente guarda `fieldErrors` num estado do React e mostra cada um junto ao campo, depois do erro de validação local, apagando-o quando o campo muda. Não se usa `errorMap.onServer`: um erro ali deixaria o formulário inválido e bloquearia o reenvio.
 - **`401` fora do login**: um middleware de função (`createMiddleware({ type: "function" })`), aplicado a toda server function autenticada:
   1. lê o cookie e o passa como `context.token`;
   2. sem cookie, ou se a API responder `401`, apaga o cookie e lança `redirect({ to: "/login", search: { redirect, motivo: "sessao-expirada" } })`. O `redirect` vem do caminho atual, que a parte cliente do middleware envia por `sendContext` (no SSR, vem da URL da requisição).
@@ -61,7 +61,7 @@ O módulo importa `@tanstack/react-start/server-only` (ou equivalente), para que
 - As mensagens fixas da spec ("Não foi possível falar com o servidor...", "Você não tem permissão...") ficam num único módulo `messages.ts`.
 
 ### D4. Proteção de rotas com layout sem caminho `_authenticated`
-- `src/routes/_authenticated.tsx`: `beforeLoad` chama `context.queryClient.ensureQueryData(currentUserQuery)`. A server function `getCurrentUser` devolve `null` sem cookie, sem chamar a API, e chama `GET /auth/me` com cookie. Com `null`, a rota lança `redirect({ to: "/login", search: { redirect: location.href } })`. O usuário vai para o contexto da rota e é lido pelo cabeçalho.
+- `src/routes/_authenticated.tsx`: `beforeLoad` chama `context.queryClient.fetchQuery(currentUserQuery)`. Usa-se `fetchQuery`, e não `ensureQueryData`, porque este devolve o que está em cache mesmo vencido, e depois do login a sessão `null` em cache levaria de volta ao login. A server function `getCurrentUser` devolve `{ user, expired }`: sem cookie, `{ user: null, expired: false }`, sem chamar a API; com cookie, chama `GET /auth/me`, e no `401` apaga o cookie e devolve `{ user: null, expired: true }`. Sem usuário, a rota lança `redirect({ to: "/login", search: { redirect: location.href, motivo } })`, com `motivo: "sessao-expirada"` quando `expired`. A decisão fica na rota, e não no middleware `authenticated`, porque só a rota conhece o caminho da navegação em andamento. O usuário vai para o contexto da rota e é lido pelo cabeçalho.
 - `currentUserQuery` tem `staleTime` de 5 minutos: navegações internas não chamam `/auth/me` de novo, e um carregamento completo (SSR) sempre chama. Isso cumpre "a cada carregamento completo da página" sem uma chamada extra por clique.
 - `src/routes/login.tsx`: `validateSearch` com Zod (`redirect?`, `motivo?`), e `beforeLoad` que leva a `/` quem já tem sessão.
 - Todas as rotas protegidas ficam sob `_authenticated/`. Uma rota nova fora dessa pasta é pública, e isso fica registrado no CLAUDE.md.
@@ -70,7 +70,7 @@ O módulo importa `@tanstack/react-start/server-only` (ou equivalente), para que
 A função pura `safeRedirect(value: unknown): string` aplica a regra da spec (começa com `/`, não começa com `//` nem com `/\`, não é `/login`, caso contrário `/`). Ela é usada no `navigate` pós-login e tem testes unitários com os casos de borda.
 
 ### D6. Logout e cache
-A server function `logout` apaga o cookie. No cliente, depois dela: `queryClient.clear()`, `router.invalidate()` e `navigate({ to: "/login" })`. Para que o "voltar" não mostre a página do cache do navegador (bfcache), as respostas SSR das rotas protegidas recebem `Cache-Control: no-store` (`setResponseHeader` no middleware de requisição). Ao voltar, a página é recarregada e o `beforeLoad` redireciona.
+A server function `logout` apaga o cookie. No cliente, depois dela: `queryClient.clear()`, `navigate({ to: "/login" })` e `router.invalidate()`, nessa ordem: invalidar antes de sair da página protegida faria o `beforeLoad` dela redirecionar para `/login?redirect=...`. Para que o "voltar" não mostre a página do cache do navegador (bfcache), as respostas SSR das rotas protegidas recebem `Cache-Control: no-store`, com `setResponseHeader` numa função `createIsomorphicFn` (`cache.ts`) chamada no `beforeLoad` do `_authenticated`, que no navegador não faz nada. Ao voltar, a página é recarregada e o `beforeLoad` redireciona.
 
 ### D7. Ambiente
 `src/env.ts`:
@@ -91,7 +91,7 @@ TanStack Form com validadores Zod que espelham as regras do backend:
 - email obrigatório, no máximo 254 caracteres;
 - senha obrigatória, no máximo 72 bytes, contados com `new TextEncoder().encode(v).length`;
 - nova senha com 8 a 72 caracteres e no máximo 72 bytes.
-As regras ficam em `src/integrations/educare-api/validation.ts`, para reaproveitar no futuro CRUD de usuários. A change `add-login-page` já cria esse arquivo com o `loginSchema`, o `LoginForm` (com a ação de envio recebida por prop, `onSubmit`) e os componentes `card` e `alert`; aqui se acrescentam os validadores da troca de senha e o `LoginForm` passa a receber a server function `login` no lugar da ação provisória, com o resultado estendido para os erros por campo e a limpeza da senha. O mesmo `loginSchema` valida a entrada da server function, para não confiar no navegador. Componente shadcn novo: `form` (se compatível com o TanStack Form; senão, `label` + mensagem). A notificação "Senha alterada." usa `sonner`.
+As regras ficam em `src/integrations/educare-api/validation.ts`, para reaproveitar no futuro CRUD de usuários. A change `add-login-page` já cria esse arquivo com o `loginSchema`, o `LoginForm` (com a ação de envio recebida por prop, `onSubmit`) e os componentes `card` e `alert`; aqui se acrescentam os validadores da troca de senha e o `LoginForm` passa a receber a server function `login` no lugar da ação provisória, com o resultado estendido para os erros por campo e a limpeza da senha. O mesmo `loginSchema` valida a entrada da server function, para não confiar no navegador. Os campos usam `Label` + `Input` + mensagem, como no `LoginForm`, sem o componente `form` do shadcn. A notificação "Senha alterada." usa `sonner`, sem o `next-themes` que o `shadcn add sonner` instala: as cores do toast vêm das variáveis do tema, que já acompanham a classe `.dark`. As server functions declaram a validação com `.validator()`, já que o `.inputValidator()` está obsoleto nesta versão do Start.
 
 ### D10. Testes
 - Unitários (Vitest): `safeRedirect`, conversão de respostas em `ApiError` (com `fetch` simulado por `vi.fn`), validação do `env` (https em produção), validadores de formulário (bytes UTF-8) e o script de geração com um contrato inválido (não altera o arquivo).
@@ -104,6 +104,8 @@ Como `role` é uma string sem enum, o tipo gerado não impede valores novos. O c
 
 ## Risks / Trade-offs
 
+- [Caminho atual no middleware `authenticated` durante a navegação no navegador] → a parte cliente envia `window.location`, que ainda é a página anterior enquanto a navegação não termina. Hoje só a troca de senha usa o middleware, chamada na própria página. Quando um loader de página chamar uma server function autenticada, o caminho do `redirect` deve vir da rota (como no `_authenticated`).
+
 - [Latência extra: navegador → Vercel → Oracle] → as chamadas são poucas e pequenas; a região da função na Vercel pode ser fixada perto da VM (`regions` no `vercel.json`) se a latência incomodar.
 - [Middleware `sendContext` e `redirect` em server functions mudam entre versões do Start] → as versões do `@tanstack/*` ficam fixas no `package.json`, e os testes dos handlers não dependem do runtime.
 - [Tipos desatualizados em relação ao backend] → `api:generate` é manual; o README e o CLAUDE.md pedem para rodá-lo a cada mudança no contrato do backend. Uma verificação automática no CI fica para a change de CI do frontend.
@@ -112,7 +114,7 @@ Como `role` é uma string sem enum, o tipo gerado não impede valores novos. O c
 
 ## Migration Plan
 
-1. Aplicar e arquivar no frontend a change `add-login-page` (layout de `/login`), para que o MODIFIED de "Página de login" encontre o requisito.
+1. Aplicar e arquivar no frontend a change `add-login-page` (layout de `/login`), para que o REMOVED de "Página de login" encontre o requisito, substituído por "Tela de login".
 1. Gerar os tipos a partir do contrato do backend local (`API_CONTRACT=../educare-backend/openapi/educare-api.json`). O HTTPS da API em produção ainda será configurado no backend, e o passo da Vercel aguarda essa URL.
 2. Aplicar esta change e rodar `npm run api:generate`.
 3. Na Vercel, configurar `EDUCARE_API_URL=https://<nome>.sslip.io` (Production e Preview) e fazer o deploy.

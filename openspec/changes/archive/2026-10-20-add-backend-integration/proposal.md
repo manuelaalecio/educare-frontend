@@ -44,7 +44,7 @@ O frontend ainda é o template do TanStack Start e não fala com a API do Educar
 
 ## Impact
 
-- **Dependências de planejamento**: exige a change `add-login-page` do frontend aplicada e arquivada antes, porque esta reaproveita o `LoginForm`, o `loginSchema` e os componentes `card` e `alert` dela e altera o requisito "Página de login". O contrato do backend (`openapi/educare-api.json`, da `add-frontend-integration` do `educare-backend`) já declara as respostas de sucesso, os erros e os campos obrigatórios. Para a produção, falta a API com HTTPS, que o backend ainda vai configurar. Para desenvolver, basta o backend rodando localmente em `http://localhost:8080`.
+- **Dependências de planejamento**: exige a change `add-login-page` do frontend aplicada e arquivada antes, porque esta reaproveita o `LoginForm`, o `loginSchema` e os componentes `card` e `alert` dela e substitui o requisito "Página de login" dela por "Tela de login" (REMOVED + ADDED, porque o cenário da mensagem provisória sai, e o OpenSpec não aceita tirar um cenário num MODIFIED). O contrato do backend (`openapi/educare-api.json`, da `add-frontend-integration` do `educare-backend`) já declara as respostas de sucesso, os erros e os campos obrigatórios. Para a produção, falta a API com HTTPS, que o backend ainda vai configurar. Para desenvolver, basta o backend rodando localmente em `http://localhost:8080`.
 - **Código**:
   - `src/env.ts` e `.env.example`;
   - novo `src/integrations/educare-api/` (cliente, erros, sessão, tipos gerados);

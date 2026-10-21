@@ -7,7 +7,7 @@ Permitir que os funcionários entrem e saiam do sistema com email e senha, mante
 ## ADDED Requirements
 
 ### Requirement: Login com email e senha
-A ação de envio do formulário de "Página de login" SHALL ser a server function de login: o servidor do frontend SHALL chamar `POST /api/v1/auth/login` da API. Com `200 OK`, SHALL gravar o `accessToken` no cookie de sessão (ver "Cookie de sessão protegido") e levar o usuário ao destino de "Volta à página pedida". Com `401`, SHALL mostrar "Email ou senha inválidos." e limpar só o campo de senha. Com `400`, SHALL mostrar as mensagens de `errors` junto aos campos correspondentes (`login` em "Email", `password` em "Senha").
+A ação de envio do formulário de "Tela de login" SHALL ser a server function de login: o servidor do frontend SHALL chamar `POST /api/v1/auth/login` da API. Com `200 OK`, SHALL gravar o `accessToken` no cookie de sessão (ver "Cookie de sessão protegido") e levar o usuário ao destino de "Volta à página pedida". Com `401`, SHALL mostrar "Email ou senha inválidos." e limpar só o campo de senha. Com `400`, SHALL mostrar as mensagens de `errors` junto aos campos correspondentes (`login` em "Email", `password` em "Senha").
 
 #### Scenario: Login com sucesso
 - **WHEN** existe a usuária `ana.souza@educare.org` com senha `segredo123`, e ela preenche o formulário de `/login` com esses dados e clica em "Entrar"
@@ -110,9 +110,7 @@ A página `/minha-conta/senha` SHALL ter os campos "Senha atual", "Nova senha" e
 - **WHEN** a usuária preenche "Nova senha" e a confirmação com `curta`, e envia
 - **THEN** aparece um erro junto a "Nova senha", e nenhuma requisição é feita à API
 
-## MODIFIED Requirements
-
-### Requirement: Página de login
+### Requirement: Tela de login
 A página `/login` SHALL ter o título "Entrar · Educare" e um formulário com os campos "Email" e "Senha" e o botão "Entrar", sem link nem opção de cadastro. Antes de enviar, o formulário SHALL exigir os dois campos preenchidos (ignorando espaços nas pontas do email), email com no máximo 254 caracteres e senha com no máximo 72 bytes em UTF-8, mostrando o erro junto ao campo, sem executar a ação de envio. Com os campos válidos, o formulário SHALL executar a ação de envio com o email e a senha (ver "Login com email e senha"), e enquanto ela não terminar o botão "Entrar" SHALL ficar desabilitado.
 
 #### Scenario: Página exibida
@@ -138,3 +136,9 @@ A página `/login` SHALL ter o título "Entrar · Educare" e um formulário com 
 #### Scenario: Envio em andamento
 - **WHEN** a usuária preenche campos válidos, clica em "Entrar" e a API ainda não respondeu
 - **THEN** o botão "Entrar" fica desabilitado, e um segundo clique não faz outra requisição
+
+## REMOVED Requirements
+
+### Requirement: Página de login
+**Reason**: o requisito criado pela `add-login-page` exigia que a ação de envio fosse provisória, sem chamar a API, e mostrasse "A entrada no sistema ainda não está disponível.". Com a integração, a ação passa a ser a server function de login, e o cenário "Entrada ainda indisponível" deixa de valer. O OpenSpec não aceita tirar um cenário num MODIFIED, então o requisito é removido e substituído por "Tela de login", em ADDED Requirements.
+**Migration**: "Tela de login", em ADDED Requirements, mantém o título, os campos, a validação e o botão desabilitado durante o envio, e liga a ação de envio a "Login com email e senha". A mensagem provisória sai da interface e dos testes.
