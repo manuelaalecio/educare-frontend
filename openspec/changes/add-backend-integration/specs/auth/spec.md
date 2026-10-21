@@ -7,7 +7,7 @@ Permitir que os funcionários entrem e saiam do sistema com email e senha, mante
 ## ADDED Requirements
 
 ### Requirement: Login com email e senha
-A ação de envio do formulário de "Página de login" SHALL ser a server function de login: o servidor do frontend SHALL chamar `POST /api/v1/auth/login` da API. Com `200 OK`, SHALL gravar o `accessToken` no cookie de sessão (ver "Cookie de sessão protegido") e levar o usuário ao destino de "Volta à página pedida". Com `401`, SHALL mostrar "Email ou senha inválidos." e limpar só o campo de senha.
+A ação de envio do formulário de "Página de login" SHALL ser a server function de login: o servidor do frontend SHALL chamar `POST /api/v1/auth/login` da API. Com `200 OK`, SHALL gravar o `accessToken` no cookie de sessão (ver "Cookie de sessão protegido") e levar o usuário ao destino de "Volta à página pedida". Com `401`, SHALL mostrar "Email ou senha inválidos." e limpar só o campo de senha. Com `400`, SHALL mostrar as mensagens de `errors` junto aos campos correspondentes (`login` em "Email", `password` em "Senha").
 
 #### Scenario: Login com sucesso
 - **WHEN** existe a usuária `ana.souza@educare.org` com senha `segredo123`, e ela preenche o formulário de `/login` com esses dados e clica em "Entrar"
@@ -16,6 +16,10 @@ A ação de envio do formulário de "Página de login" SHALL ser a server functi
 #### Scenario: Credenciais inválidas
 - **WHEN** a usuária preenche `ana.souza@educare.org` e a senha `errada123` e clica em "Entrar"
 - **THEN** a página continua em `/login` e mostra "Email ou senha inválidos.", o campo de email mantém `ana.souza@educare.org`, o campo de senha fica vazio, e nenhum cookie de sessão é gravado
+
+#### Scenario: Erro de campo vindo da API
+- **WHEN** a API responde `400` ao login com uma entrada em `errors` para `password` com a mensagem "é obrigatória"
+- **THEN** a mensagem "é obrigatória" aparece junto a "Senha", e nenhum cookie de sessão é gravado
 
 #### Scenario: API indisponível no login
 - **WHEN** a API não responde, e a usuária envia credenciais válidas

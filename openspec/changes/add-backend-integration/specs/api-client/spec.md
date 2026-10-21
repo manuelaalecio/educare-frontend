@@ -56,11 +56,15 @@ Os tipos de requisição e resposta da API SHALL ser gerados do contrato OpenAPI
 - **THEN** o script termina com código diferente de zero, e o arquivo de tipos gerados não é alterado
 
 ### Requirement: Erros da API tratados de forma uniforme
-O cliente da API SHALL converter toda resposta de erro da API num erro tipado com o status HTTP, o `title`, o `detail` e, quando houver, a lista `errors` (`field`, `message`). Formulários SHALL mostrar cada entrada de `errors` junto ao campo correspondente e o `detail` como mensagem geral. Para `403`, a interface SHALL mostrar "Você não tem permissão para fazer isso.". Para `5xx`, resposta que não seja `ProblemDetail`, falha de rede ou ausência de resposta da API em até 10 segundos, a interface SHALL mostrar "Não foi possível falar com o servidor. Tente de novo em instantes." e SHALL NOT mostrar mensagens internas, URLs ou stack traces. Os logs do servidor do frontend SHALL NOT conter corpo de requisição, senha, token nem dados pessoais.
+O cliente da API SHALL converter toda resposta de erro da API num erro tipado com o status HTTP, o `title` e, quando houver, o `detail` e a lista `errors` (`field`, `message`). Uma resposta SHALL ser tratada como `ProblemDetail` quando tiver `title` e `status`, sem depender de `type`, `detail` ou `instance`. Formulários SHALL mostrar cada entrada de `errors` junto ao campo correspondente e o `detail`, quando houver, como mensagem geral. Para `403`, a interface SHALL mostrar "Você não tem permissão para fazer isso.". Para `5xx`, resposta que não seja `ProblemDetail`, falha de rede ou ausência de resposta da API em até 10 segundos, a interface SHALL mostrar "Não foi possível falar com o servidor. Tente de novo em instantes." e SHALL NOT mostrar mensagens internas, URLs ou stack traces. Os logs do servidor do frontend SHALL NOT conter corpo de requisição, senha, token nem dados pessoais.
 
 #### Scenario: Erros de campo exibidos no formulário
 - **WHEN** a API responde `400` com `{"detail": "Um ou mais campos são inválidos", "errors": [{"field": "newPassword", "message": "deve ter entre 8 e 72 caracteres"}]}` ao envio de um formulário
 - **THEN** a mensagem "deve ter entre 8 e 72 caracteres" aparece junto ao campo `newPassword`
+
+#### Scenario: Erro sem detail
+- **WHEN** a API responde `400` com `{"title": "Bad Request", "status": 400, "errors": [{"field": "login", "message": "é obrigatório"}]}`, sem `type` nem `detail`
+- **THEN** a mensagem "é obrigatório" aparece junto ao campo `login`, e a interface não mostra erro de servidor indisponível
 
 #### Scenario: Sem permissão
 - **WHEN** a API responde `403` a uma ação

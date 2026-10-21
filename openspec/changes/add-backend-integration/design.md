@@ -11,7 +11,13 @@
   - erros em `ProblemDetail` (`errors: [{field, message}]` no `400`);
   - `401` para token ausente, inválido, expirado ou de usuário excluído, sem distinguir o motivo;
   - JWT de 8 h, sem refresh.
-- O contrato com erros e campos obrigatórios vem da change `add-frontend-integration` do backend, em `openapi/educare-api.json` na `main` (repositório público).
+- O contrato fica em `openapi/educare-api.json` no `educare-backend` (o build do backend falha se ele divergir da API) e é igual ao `/v3/api-docs` do profile `dev`:
+  - declara só o servidor relativo `/`, sem host;
+  - `POST /api/v1/auth/login` não tem requisito de segurança e devolve `200` com `AccessTokenResponse` (`accessToken`, `tokenType` sempre `Bearer`, `expiresIn` em segundos), todos obrigatórios;
+  - toda resposta de sucesso com corpo é `application/json`;
+  - todo erro é `application/problem+json` com `ProblemDetail`, em que só `title` e `status` são obrigatórios; `type` (ausente equivale a `about:blank`, pela RFC 9457), `detail` e `instance` são opcionais, e `errors` só vem no `400` de validação;
+  - toda operação protegida declara `401`, e as de ADMIN (`/api/v1/users/**`) também `403`;
+  - `role` é uma string sem enum no contrato, com os valores `ADMIN` e `USER`.
 
 ## Goals / Non-Goals
 
@@ -36,7 +42,7 @@ As chamadas à API ficam em `createServerFn` (`@tanstack/react-start`), em `src/
 **CSRF:** as server functions são `POST` para a própria origem, e o cookie é `SameSite=Lax`, então outro site não consegue enviar o cookie num `POST`. Nenhuma server function muda estado por `GET`.
 
 ### D2. Cliente tipado com `openapi-fetch`
-`createApiClient(token?: string)` cria um cliente `openapi-fetch` tipado pelo `paths` gerado, com `baseUrl = env.EDUCARE_API_URL`. Esse `fetch`:
+`createApiClient(token?: string)` cria um cliente `openapi-fetch` tipado pelo `paths` gerado, com `baseUrl = env.EDUCARE_API_URL` (o contrato não declara host, e os caminhos já trazem o `/api/v1`). Esse `fetch`:
 - injeta `Authorization: Bearer <token>` quando há token;
 - aplica `AbortSignal.timeout(10_000)`;
 - registra no log só o método, o caminho do template (`/api/v1/auth/me`), o status e a duração, nunca o corpo nem os headers.
@@ -46,7 +52,7 @@ O módulo importa `@tanstack/react-start/server-only` (ou equivalente), para que
 **Alternativas:** `fetch` puro com tipos à mão (os tipos divergem do backend); geradores de SDK completos (`orval`, `openapi-generator`), que trazem mais código gerado e dependências do que o necessário. `openapi-fetch` + `openapi-typescript` geram só tipos e um wrapper de ~6 kB.
 
 ### D3. Erros: `ApiError` no servidor, resultado serializável na interface
-- O cliente converte respostas não-2xx em `ApiError`, com os tipos `validation` (`400` com `errors` → `fieldErrors: Record<string, string>`), `unauthorized`, `forbidden`, `not-found`, `conflict` e `unavailable` (`5xx`, corpo que não é `ProblemDetail`, falha de rede e timeout).
+- O cliente converte respostas não-2xx em `ApiError`, com os tipos `validation` (`400` com `errors` → `fieldErrors: Record<string, string>`), `unauthorized`, `forbidden`, `not-found`, `conflict` e `unavailable` (`5xx`, corpo que não é `ProblemDetail`, falha de rede e timeout). Um corpo é `ProblemDetail` quando é JSON com `title` (string) e `status` (número); a conversão não depende de `type`, `detail` nem `instance`. Sem `detail`, a interface usa a mensagem fixa do tipo de erro.
 - **Formulários** (login, troca de senha): a server function captura o `ApiError` e devolve `{ ok: false, error: { kind, message, fieldErrors } }`, um objeto serializável e sem detalhes internos. O componente distribui `fieldErrors` nos campos do TanStack Form, com `setFieldMeta` / `errorMap.onServer`.
 - **`401` fora do login**: um middleware de função (`createMiddleware({ type: "function" })`), aplicado a toda server function autenticada:
   1. lê o cookie e o passa como `context.token`;
@@ -93,6 +99,9 @@ As regras ficam em `src/integrations/educare-api/validation.ts`, para reaproveit
 - Handlers das server functions: a lógica fica em funções puras que recebem as dependências (`api`, `cookies`), testadas sem o runtime do Start, e o `createServerFn` só faz a ligação.
 - Verificação de build: um script `scripts/check-bundle.mjs`, chamado depois do `npm run build`, confere que `.output/public` não contém o valor de `EDUCARE_API_URL` usado no build nem a string `educare_session`.
 
+### D11. Role sem enum no contrato
+Como `role` é uma string sem enum, o tipo gerado não impede valores novos. O cabeçalho traduz `ADMIN` para "Administrador" e `USER` para "Funcionário", e um valor desconhecido aparece como veio, sem quebrar a página.
+
 ## Risks / Trade-offs
 
 - [Latência extra: navegador → Vercel → Oracle] → as chamadas são poucas e pequenas; a região da função na Vercel pode ser fixada perto da VM (`regions` no `vercel.json`) se a latência incomodar.
@@ -104,7 +113,7 @@ As regras ficam em `src/integrations/educare-api/validation.ts`, para reaproveit
 ## Migration Plan
 
 1. Aplicar e arquivar no frontend a change `add-login-page` (layout de `/login`), para que o MODIFIED de "Página de login" encontre o requisito.
-1. Aplicar no backend a change `add-frontend-integration` (contrato + HTTPS).
+1. Gerar os tipos a partir do contrato do backend local (`API_CONTRACT=../educare-backend/openapi/educare-api.json`). O HTTPS da API em produção ainda será configurado no backend, e o passo da Vercel aguarda essa URL.
 2. Aplicar esta change e rodar `npm run api:generate`.
 3. Na Vercel, configurar `EDUCARE_API_URL=https://<nome>.sslip.io` (Production e Preview) e fazer o deploy.
 4. Rollback: reverter o deploy na Vercel. O backend não muda por causa do front.
