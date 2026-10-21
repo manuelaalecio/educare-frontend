@@ -1,0 +1,56 @@
+import { describe, expect, it } from "vitest";
+import { loginSchema } from "./validation";
+
+function errorPaths(input: { login: string; password: string }) {
+	const result = loginSchema.safeParse(input);
+	return result.success
+		? []
+		: result.error.issues.map((issue) => issue.path[0]);
+}
+
+describe("loginSchema", () => {
+	it("recusa os dois campos vazios", () => {
+		expect(errorPaths({ login: "", password: "" })).toEqual([
+			"login",
+			"password",
+		]);
+	});
+
+	it("recusa o email só com espaços", () => {
+		expect(errorPaths({ login: "   ", password: "" })).toEqual([
+			"login",
+			"password",
+		]);
+	});
+
+	it("tira os espaços das pontas do email", () => {
+		const result = loginSchema.parse({
+			login: "  admin@educare.org ",
+			password: "educare123",
+		});
+		expect(result.login).toBe("admin@educare.org");
+	});
+
+	it("recusa o email com 255 caracteres", () => {
+		const login = `${"a".repeat(243)}@educare.org`;
+		expect(login).toHaveLength(255);
+		expect(errorPaths({ login, password: "educare123" })).toEqual(["login"]);
+	});
+
+	it("aceita o email com 254 caracteres", () => {
+		const login = `${"a".repeat(242)}@educare.org`;
+		expect(errorPaths({ login, password: "educare123" })).toEqual([]);
+	});
+
+	it("aceita a senha com 72 bytes", () => {
+		expect(
+			errorPaths({ login: "admin@educare.org", password: "a".repeat(72) }),
+		).toEqual([]);
+	});
+
+	it("recusa a senha com 40 ç (80 bytes)", () => {
+		expect(
+			errorPaths({ login: "admin@educare.org", password: "ç".repeat(40) }),
+		).toEqual(["password"]);
+	});
+});

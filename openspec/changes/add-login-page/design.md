@@ -19,10 +19,10 @@
 ## Decisions
 
 ### D1. Formulário
-`LoginForm` em `src/components/auth/login-form.tsx`, com TanStack Form e os validadores do `loginSchema` (D3). Layout: `Card` centralizado, com o nome "Educare" e os campos com `Label` + `Input` (`type="email"`, `autoComplete="username"` e `type="password"`, `autoComplete="current-password"`). O erro de cada campo aparece logo abaixo dele, e um `Alert` acima dos campos mostra a mensagem devolvida pela ação de envio. O botão "Entrar" usa `form.state.isSubmitting` para ficar desabilitado. Componentes shadcn novos: `card` e `alert`; se o `shadcn add` gerar import de `#/lib/utils`, troca-se por `cn` do pacote `cn`.
+`LoginForm` em `src/components/auth/login-form.tsx`, com TanStack Form e os validadores do `loginSchema` (D3). Layout: `Card` centralizado, com o nome "Educare", o subtítulo "Entre com seu email e senha." e os campos com `Label` + `Input` (`type="email"`, `autoComplete="username"` e `type="password"`, `autoComplete="current-password"`). O erro de cada campo aparece logo abaixo dele, e um `Alert` acima dos campos mostra a mensagem devolvida pela ação de envio. O botão "Entrar" usa `form.state.isSubmitting` para ficar desabilitado. O `<form>` tem `noValidate`: sem ele, o `type="email"` faria o navegador barrar o envio com o balão nativo e exigir o formato de email, que o backend não valida; assim vale só o `loginSchema`. Componentes shadcn novos: `card` e `alert`; se o `shadcn add` gerar import de `#/lib/utils`, troca-se por `cn` do pacote `cn`.
 
 ### D2. Ação de envio recebida por prop
-`LoginForm({ onSubmit })`, com `onSubmit(values: { login: string; password: string }) => Promise<{ message?: string } | undefined>`. Se a ação devolver `message`, ela aparece no `Alert`. Nesta change, a rota passa uma ação provisória que devolve "A entrada no sistema ainda não está disponível." A `add-backend-integration` troca essa ação pela server function `login` e estende o resultado com o que precisar (erros por campo, limpar a senha), sem mudar o layout.
+`LoginForm({ onSubmit })`, com `onSubmit(values: { login: string; password: string }) => Promise<{ message?: string } | undefined>`. A ação recebe os valores já passados pelo `loginSchema`, ou seja, com o email sem espaços nas pontas. Se a ação devolver `message`, ela aparece no `Alert`. Nesta change, a rota passa uma ação provisória que devolve "A entrada no sistema ainda não está disponível." A `add-backend-integration` troca essa ação pela server function `login` e estende o resultado com o que precisar (erros por campo, limpar a senha), sem mudar o layout.
 
 **Alternativa descartada:** uma server function `login` falsa. Ela criaria um contrato que a outra change teria de desfazer, e esta etapa não precisa do servidor.
 
@@ -39,7 +39,7 @@ As mensagens de erro ficam em português no próprio schema.
 ### D5. Testes
 - Unitários: `loginSchema` (vazio, só espaços, email com 255 caracteres, senha com 72 bytes aceita, 40 `ç` recusada).
 - Componente (Testing Library): `LoginForm` com `onSubmit` simulado (`vi.fn`), cobrindo os cenários da spec e a mensagem devolvida pela ação aparecendo no `Alert`.
-- Rota: a ação provisória devolve a mensagem de entrada indisponível.
+- Rota: a ação provisória devolve a mensagem de entrada indisponível. O teste fica em `src/routes/-login.test.tsx`: o gerador de rotas ignora arquivos com `-` na frente, e um `login.test.tsx` em `routes/` seria tratado como rota.
 - Manual: `npm run dev`.
 
 ## Risks / Trade-offs
