@@ -15,7 +15,7 @@ O frontend ainda é o template do TanStack Start e não fala com a API do Educar
   - converte as respostas de erro (`ProblemDetail`) num erro tipado, com os erros por campo;
   - sem token válido, encerra a sessão e manda para o login.
 - **Autenticação e sessão**:
-  - página `/login` (email e senha);
+  - página `/login` (layout e validação criados pela `add-login-page`) ligada à API;
   - logout;
   - rotas protegidas por padrão, com volta à página pedida depois do login;
   - sessão expirada (o token dura 8 h, sem refresh) levando ao login com aviso;
@@ -44,13 +44,14 @@ O frontend ainda é o template do TanStack Start e não fala com a API do Educar
 
 ## Impact
 
-- **Dependências de planejamento**: exige a change `add-frontend-integration` do `educare-backend` aplicada, pelo contrato em `openapi/educare-api.json` com erros e campos obrigatórios declarados e pela API com HTTPS para a produção. Para desenvolver, basta o backend rodando localmente em `http://localhost:8080`.
+- **Dependências de planejamento**: exige a change `add-login-page` do frontend aplicada e arquivada antes, porque esta reaproveita o `LoginForm`, o `loginSchema` e os componentes `card` e `alert` dela e altera o requisito "Página de login". Também exige a change `add-frontend-integration` do `educare-backend` aplicada, pelo contrato em `openapi/educare-api.json` com erros e campos obrigatórios declarados e pela API com HTTPS para a produção. Para desenvolver, basta o backend rodando localmente em `http://localhost:8080`.
 - **Código**:
   - `src/env.ts` e `.env.example`;
   - novo `src/integrations/educare-api/` (cliente, erros, sessão, tipos gerados);
-  - rotas novas: `src/routes/login.tsx`, layout `src/routes/_authenticated.tsx`, `src/routes/_authenticated/index.tsx` (substitui `src/routes/index.tsx`) e `src/routes/_authenticated/minha-conta/senha.tsx`;
+  - `src/routes/login.tsx` (já criada pela `add-login-page`) e `src/components/auth/login-form.tsx`, ligados à API;
+  - rotas novas: layout `src/routes/_authenticated.tsx`, `src/routes/_authenticated/index.tsx` (substitui `src/routes/index.tsx`) e `src/routes/_authenticated/minha-conta/senha.tsx`;
   - `src/routes/__root.tsx` (idioma, título, contexto da sessão);
-  - componentes shadcn novos (`card`, `alert`, `sonner` ou similar).
+  - componente shadcn novo `sonner` (ou similar); `card` e `alert` já vêm da `add-login-page`.
 - **Dependências**: `openapi-fetch` (runtime, cliente tipado de ~6 kB) e `openapi-typescript` (dev, gerador de tipos).
 - **Configuração na Vercel**: variável `EDUCARE_API_URL` com a URL `https://` da API em produção e nos previews.
 - **Backend**: nenhuma mudança além da change irmã. O BFF não depende do CORS.

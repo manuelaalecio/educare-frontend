@@ -85,11 +85,11 @@ TanStack Form com validadores Zod que espelham as regras do backend:
 - email obrigatório, no máximo 254 caracteres;
 - senha obrigatória, no máximo 72 bytes, contados com `new TextEncoder().encode(v).length`;
 - nova senha com 8 a 72 caracteres e no máximo 72 bytes.
-As regras ficam em `src/integrations/educare-api/validation.ts`, para reaproveitar no futuro CRUD de usuários. Componentes shadcn novos: `card`, `alert`, `form` (se compatível com o TanStack Form; senão, `label` + mensagem). A notificação "Senha alterada." usa `sonner`.
+As regras ficam em `src/integrations/educare-api/validation.ts`, para reaproveitar no futuro CRUD de usuários. A change `add-login-page` já cria esse arquivo com o `loginSchema`, o `LoginForm` (com a ação de envio recebida por prop, `onSubmit`) e os componentes `card` e `alert`; aqui se acrescentam os validadores da troca de senha e o `LoginForm` passa a receber a server function `login` no lugar da ação provisória, com o resultado estendido para os erros por campo e a limpeza da senha. O mesmo `loginSchema` valida a entrada da server function, para não confiar no navegador. Componente shadcn novo: `form` (se compatível com o TanStack Form; senão, `label` + mensagem). A notificação "Senha alterada." usa `sonner`.
 
 ### D10. Testes
 - Unitários (Vitest): `safeRedirect`, conversão de respostas em `ApiError` (com `fetch` simulado por `vi.fn`), validação do `env` (https em produção), validadores de formulário (bytes UTF-8) e o script de geração com um contrato inválido (não altera o arquivo).
-- Componentes (Testing Library): `LoginForm` e `ChangePasswordForm`, com as server functions simuladas por `vi.mock`, cobrindo os cenários de interface da spec `auth`.
+- Componentes (Testing Library): `ChangePasswordForm` e a ligação do `LoginForm` à server function `login` (os testes de layout e validação do `LoginForm` já vêm da `add-login-page`), com as server functions simuladas por `vi.mock`, cobrindo os cenários de interface da spec `auth`.
 - Handlers das server functions: a lógica fica em funções puras que recebem as dependências (`api`, `cookies`), testadas sem o runtime do Start, e o `createServerFn` só faz a ligação.
 - Verificação de build: um script `scripts/check-bundle.mjs`, chamado depois do `npm run build`, confere que `.output/public` não contém o valor de `EDUCARE_API_URL` usado no build nem a string `educare_session`.
 
@@ -103,6 +103,7 @@ As regras ficam em `src/integrations/educare-api/validation.ts`, para reaproveit
 
 ## Migration Plan
 
+1. Aplicar e arquivar no frontend a change `add-login-page` (layout de `/login`), para que o MODIFIED de "Página de login" encontre o requisito.
 1. Aplicar no backend a change `add-frontend-integration` (contrato + HTTPS).
 2. Aplicar esta change e rodar `npm run api:generate`.
 3. Na Vercel, configurar `EDUCARE_API_URL=https://<nome>.sslip.io` (Production e Preview) e fazer o deploy.

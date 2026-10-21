@@ -7,7 +7,7 @@ Permitir que os funcionários entrem e saiam do sistema com email e senha, mante
 ## ADDED Requirements
 
 ### Requirement: Login com email e senha
-A página `/login` SHALL ter um formulário com "Email" e "Senha". Antes de enviar, o formulário SHALL exigir os dois campos preenchidos, email com no máximo 254 caracteres e senha com no máximo 72 bytes em UTF-8, e mostrar o erro junto ao campo, sem chamar a API. No envio, o servidor do frontend SHALL chamar `POST /api/v1/auth/login` da API. Com `200 OK`, SHALL gravar o `accessToken` no cookie de sessão (ver "Cookie de sessão protegido") e levar o usuário ao destino de "Volta à página pedida". Com `401`, SHALL mostrar "Email ou senha inválidos." e limpar só o campo de senha. Enquanto o envio estiver em andamento, o botão "Entrar" SHALL ficar desabilitado.
+A ação de envio do formulário de "Página de login" SHALL ser a server function de login: o servidor do frontend SHALL chamar `POST /api/v1/auth/login` da API. Com `200 OK`, SHALL gravar o `accessToken` no cookie de sessão (ver "Cookie de sessão protegido") e levar o usuário ao destino de "Volta à página pedida". Com `401`, SHALL mostrar "Email ou senha inválidos." e limpar só o campo de senha.
 
 #### Scenario: Login com sucesso
 - **WHEN** existe a usuária `ana.souza@educare.org` com senha `segredo123`, e ela preenche o formulário de `/login` com esses dados e clica em "Entrar"
@@ -16,14 +16,6 @@ A página `/login` SHALL ter um formulário com "Email" e "Senha". Antes de envi
 #### Scenario: Credenciais inválidas
 - **WHEN** a usuária preenche `ana.souza@educare.org` e a senha `errada123` e clica em "Entrar"
 - **THEN** a página continua em `/login` e mostra "Email ou senha inválidos.", o campo de email mantém `ana.souza@educare.org`, o campo de senha fica vazio, e nenhum cookie de sessão é gravado
-
-#### Scenario: Campos vazios
-- **WHEN** a usuária clica em "Entrar" com os dois campos vazios
-- **THEN** aparece um erro junto a "Email" e outro junto a "Senha", e nenhuma requisição é feita à API
-
-#### Scenario: Senha acima de 72 bytes
-- **WHEN** a usuária preenche uma senha com 40 caracteres `ç` (80 bytes em UTF-8) e clica em "Entrar"
-- **THEN** aparece um erro junto a "Senha", e nenhuma requisição é feita à API
 
 #### Scenario: API indisponível no login
 - **WHEN** a API não responde, e a usuária envia credenciais válidas
@@ -113,3 +105,32 @@ A página `/minha-conta/senha` SHALL ter os campos "Senha atual", "Nova senha" e
 #### Scenario: Nova senha curta
 - **WHEN** a usuária preenche "Nova senha" e a confirmação com `curta`, e envia
 - **THEN** aparece um erro junto a "Nova senha", e nenhuma requisição é feita à API
+
+## MODIFIED Requirements
+
+### Requirement: Página de login
+A página `/login` SHALL ter o título "Entrar · Educare" e um formulário com os campos "Email" e "Senha" e o botão "Entrar", sem link nem opção de cadastro. Antes de enviar, o formulário SHALL exigir os dois campos preenchidos (ignorando espaços nas pontas do email), email com no máximo 254 caracteres e senha com no máximo 72 bytes em UTF-8, mostrando o erro junto ao campo, sem executar a ação de envio. Com os campos válidos, o formulário SHALL executar a ação de envio com o email e a senha (ver "Login com email e senha"), e enquanto ela não terminar o botão "Entrar" SHALL ficar desabilitado.
+
+#### Scenario: Página exibida
+- **WHEN** a usuária abre `/login`
+- **THEN** o título da página é "Entrar · Educare", aparecem os campos "Email" e "Senha" e o botão "Entrar", e não há link de cadastro
+
+#### Scenario: Campos vazios
+- **WHEN** a usuária clica em "Entrar" com os dois campos vazios
+- **THEN** aparece um erro junto a "Email" e outro junto a "Senha", e nenhuma requisição é feita à API
+
+#### Scenario: Campos só com espaços
+- **WHEN** a usuária preenche "Email" só com espaços, deixa "Senha" vazia e clica em "Entrar"
+- **THEN** aparece um erro junto a "Email" e outro junto a "Senha", e nenhuma requisição é feita à API
+
+#### Scenario: Email longo demais
+- **WHEN** a usuária preenche um email com 255 caracteres e uma senha válida e clica em "Entrar"
+- **THEN** aparece um erro junto a "Email", e nenhuma requisição é feita à API
+
+#### Scenario: Senha acima de 72 bytes
+- **WHEN** a usuária preenche uma senha com 40 caracteres `ç` (80 bytes em UTF-8) e clica em "Entrar"
+- **THEN** aparece um erro junto a "Senha", e nenhuma requisição é feita à API
+
+#### Scenario: Envio em andamento
+- **WHEN** a usuária preenche campos válidos, clica em "Entrar" e a API ainda não respondeu
+- **THEN** o botão "Entrar" fica desabilitado, e um segundo clique não faz outra requisição

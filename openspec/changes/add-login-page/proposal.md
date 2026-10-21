@@ -2,31 +2,29 @@
 
 ## Why
 
-Os funcionários ainda não conseguem entrar no frontend: ele é o template do TanStack Start e não fala com a API do Educare. A página de login é o primeiro passo de qualquer tela de negócio, e dá para entregá-la já autenticando de verdade contra o `educare-backend` rodando localmente (Postgres no Docker + API pelo Gradle), com o usuário `admin@educare.org` que a migration `V3__seed_admin_user.sql` já cria.
+Os funcionários vão precisar de uma tela para entrar no sistema, e hoje o frontend é só o template do TanStack Start. Esta change entrega apenas a página `/login` (layout e validação dos campos no navegador), para ver e ajustar a tela antes de ligá-la à API.
 
-A change `add-backend-integration` planeja o login junto com muito mais coisa (logout, rotas protegidas, cabeçalho, troca de senha) e está parada em 3/18 tarefas. Esta change recorta dela só a entrada no sistema, para entregar uma etapa pequena e testável.
+A integração de verdade (tipos gerados, cliente da API, server functions, cookie de sessão, volta à página pedida) fica na change `add-backend-integration`, que liga esta página à API depois.
 
 ## What Changes
 
-- **Página `/login`** com "Email" e "Senha", validação no navegador espelhando as regras do backend (obrigatórios, email até 254 caracteres, senha até 72 bytes em UTF-8), botão "Entrar" desabilitado durante o envio e mensagens para credenciais inválidas e API indisponível.
-- **Login pelo servidor do frontend (BFF)**: uma server function chama `POST /api/v1/auth/login` da API e grava o token num cookie `educare_session` `HttpOnly`. O navegador nunca vê o token nem chama a API diretamente.
-- **Volta à página pedida**: depois do login, leva ao `redirect` da URL quando ele é um caminho interno; caso contrário, a `/`.
-- **Quem já tem sessão válida** e abre `/login` é levado a `/`. Uma sessão recusada pela API (`401`) tem o cookie apagado e vê o formulário normalmente.
-- **Base de integração mínima** em `src/integrations/educare-api/`: tipos gerados do contrato (lidos do `/v3/api-docs` do backend local, já que o `openapi/educare-api.json` do backend ainda não foi commitado), cliente tipado só de servidor com tempo limite e conversão de erros. Fica pronta para a `add-backend-integration` continuar em cima.
-- A página `/` continua a mesma e **não** é protegida nesta etapa.
+- **Página `/login`** com o título "Entrar · Educare": um `Card` centralizado com o nome "Educare", os campos "Email" e "Senha" e o botão "Entrar", sem link de cadastro.
+- **Validação no navegador** espelhando as regras do backend: os dois campos obrigatórios, email com até 254 caracteres e senha com até 72 bytes em UTF-8, com o erro junto ao campo.
+- **Ação de envio recebida por prop**: o formulário chama a ação que a página passa e desabilita o botão "Entrar" até ela terminar. Nesta etapa, a ação é provisória, não chama a API e mostra "A entrada no sistema ainda não está disponível."
+- **Componentes shadcn** `card` e `alert`.
+- A página `/` continua a mesma.
 
 ## Non-goals
 
+- Qualquer comunicação com a API: tipos gerados, cliente, conversão de erros, server functions, cookie de sessão, verificação de sessão ao abrir `/login` e volta à página pedida (`redirect`). Tudo isso fica na `add-backend-integration`.
 - Cadastro, criação ou edição de usuários. Não haverá link nem página de cadastro.
-- Logout, rotas protegidas, cabeçalho com o usuário, aviso de sessão expirada e troca de senha: continuam na `add-backend-integration`.
-- Recuperação de senha, "lembrar de mim" e refresh token: o backend não oferece.
-- Acesso direto ao banco de dados pelo frontend: o front só fala com a API, que é quem acessa o Postgres.
+- Logout, rotas protegidas, cabeçalho com o usuário, troca de senha, recuperação de senha e "lembrar de mim".
 - Mudanças no `educare-backend`.
 
 ## Capabilities
 
 ### New Capabilities
-- `auth`: entrada no sistema pelo frontend. Cobre o formulário de `/login`, a validação no navegador, o cookie de sessão protegido, a volta à página pedida e o tratamento de quem já tem sessão.
+- `auth`: entrada no sistema pelo frontend. Nesta change, cobre a página `/login` e a validação dos campos no navegador.
 
 ### Modified Capabilities
 <!-- Nenhuma: o projeto ainda não tem specs em openspec/specs/. -->
@@ -34,10 +32,10 @@ A change `add-backend-integration` planeja o login junto com muito mais coisa (l
 ## Impact
 
 - **Código**:
-  - novo `src/integrations/educare-api/` (tipos gerados, cliente, erros, sessão, validação, `safeRedirect`);
-  - nova rota `src/routes/login.tsx` e componente de formulário;
+  - nova rota `src/routes/login.tsx`;
+  - novo componente `src/components/auth/login-form.tsx`;
+  - novo `src/integrations/educare-api/validation.ts` com o `loginSchema` (no lugar que a `add-backend-integration` já prevê);
   - componentes shadcn novos (`card`, `alert`).
-- **Dependências**: nenhuma nova (`openapi-fetch`, `openapi-typescript`, `zod` e `@tanstack/react-form` já estão instalados).
-- **Configuração**: usa o `EDUCARE_API_URL` que já existe no `src/env.ts` (`http://localhost:8080` no `.env.example`).
-- **Para rodar**: backend local com `docker compose up -d db` e `./gradlew bootRun` no `educare-backend` (profile `dev`, que serve o `/v3/api-docs`).
-- **Outra change**: a `add-backend-integration` precisa ser revisada (`/opsx:update`) para tirar os requisitos e tarefas de login cobertos aqui (as tarefas 2.2, 3.1, 3.2, 4.1, 4.2, a parte de login da 4.3 e a 4.4) e os requisitos "Login com email e senha", "Cookie de sessão protegido" e "Volta à página pedida" da spec `auth` dela, senão as duas vão adicionar os mesmos requisitos ao arquivar.
+- **Dependências**: nenhuma nova (`zod` e `@tanstack/react-form` já estão instalados).
+- **Para rodar**: só `npm run dev`; o backend não é necessário.
+- **Outra change**: a `add-backend-integration` foi revisada para reaproveitar o `LoginForm`, o `loginSchema` e os componentes desta change, trocar a ação provisória pela server function `login` e alterar o requisito "Página de login" (por isso esta change precisa ser arquivada antes dela).
