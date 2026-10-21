@@ -13,7 +13,7 @@
 
 ## 3. Verificação integrada
 
-- [ ] 3.1 Com `npm run dev`, conferir manualmente:
+- [x] 3.1 Com `npm run dev`, conferir manualmente:
   - a página `/` nos dois modos, com as cores da tabela da spec (fundo, texto e um `Button` padrão, inspecionados no DevTools);
   - no modo escuro salvo, com a CPU limitada a 6x no DevTools, recarregar e confirmar que não aparece nenhum quadro claro ("Recarregar no modo escuro");
   - o console sem avisos de hidratação ("Sem avisos de hidratação");
