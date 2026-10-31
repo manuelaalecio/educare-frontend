@@ -52,7 +52,7 @@ A rota `usuarios.tsx` declara `validateSearch` com `pagina` (inteiro ≥ 1, e o 
 O backend não diferencia os conflitos por código, então o front decide pelo que o pedido mudou:
 - criar: o `409` é sempre email → `fieldErrors.login = messages.userEmailTaken`;
 - editar: se o usuário era `COORDENADOR`, passa a `EDUCADOR` e o email (normalizado em minúsculas e sem espaços) não mudou, o conflito é o último coordenador → alerta `messages.lastCoordinator`. Se a role não perdeu `COORDENADOR`, o conflito é o email → erro no campo. Se mudaram os dois, vale o `detail` da API num alerta (ele é em pt-BR e não tem dados pessoais);
-- excluir: o `409` vira `messages.lastCoordinator`. A autoexclusão não chega pela interface (D7), e um `409` de outra causa mostra o `detail` da API.
+- excluir: todo `409` vira `messages.lastCoordinator`. O outro `409` possível, a autoexclusão, não chega pela interface (D7).
 
 A classificação fica em `users.ts`, no servidor, que recebe `currentRole` e `currentLogin` no `updateUserSchema`.
 - *Descartado*: comparar o texto do `detail`. Ele quebraria com qualquer ajuste de redação no backend.
