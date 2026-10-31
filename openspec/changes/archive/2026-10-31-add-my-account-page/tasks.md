@@ -33,6 +33,6 @@
 
 ## 7. Conferência final
 
-- [ ] 7.1 Conferir manualmente, com `npm run dev`, a página e o modal contra as pranchas "Minha conta · desktop", "· alterar senha (modal)", "· celular" (390 px) e "· modo escuro", e a navegação só por teclado no modal (`Tab` preso, `Esc` fecha, foco volta a "Alterar senha") (D4, D10)
-- [ ] 7.2 Com o backend com o contrato novo rodando, conferir manualmente: trocar a senha no navegador A e recarregar (continua logado, `educare_session` mudou com `HttpOnly`, `SameSite=Lax` e `Max-Age=28800` no DevTools); no navegador B, a próxima ação leva ao login com "Sua sessão expirou. Entre de novo para continuar."; errar a senha atual 6 vezes mostra "Muitas tentativas. Tente novamente em alguns minutos." (D7, D8)
+- [x] 7.1 Conferir manualmente, com `npm run dev`, a página e o modal contra as pranchas "Minha conta · desktop", "· alterar senha (modal)", "· celular" (390 px) e "· modo escuro", e a navegação só por teclado no modal (`Tab` preso, `Esc` fecha, foco volta a "Alterar senha") (D4, D10)
+- [x] 7.2 Com o backend com o contrato novo rodando, conferir manualmente: trocar a senha no navegador A e recarregar (continua logado, `educare_session` mudou com `HttpOnly`, `SameSite=Lax` e `Max-Age=28800` no DevTools); no navegador B, a próxima ação leva ao login com "Sua sessão expirou. Entre de novo para continuar."; errar a senha atual 6 vezes mostra "Muitas tentativas. Tente novamente em alguns minutos." (D7, D8)
 - [x] 7.3 Rodar `npm run check -- --write`, `npm run typecheck` e `npm test`, e verificar que os três terminam sem erro
