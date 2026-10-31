@@ -32,6 +32,6 @@
 
 ## 6. Conferência final
 
-- [ ] 6.1 Com o backend de turmas rodando e `npm run dev`, conferir manualmente: criar, renomear e excluir turmas; nome duplicado com outra caixa e com acento ("turma 1", "Turmá 1"); excluir numa aba do navegador uma turma aberta para edição em outra (`404` com o aviso); entrar como `USER` (sem o item "Configurações", e `/configuracoes/turmas` leva ao Início) (D1, D7, D9)
-- [ ] 6.2 Conferir manualmente as abas e os modais contra as pranchas "Turmas · lista", "· editar turma", "· excluir turma" e "· celular" em 1440 px, em 390 px e no modo escuro, incluindo o contraste de "Excluir turma" no modo escuro, e a navegação só por teclado nas abas, nos botões das linhas e nos três modais (`Tab` preso, `Esc` fecha, foco volta) (D2, D6, D7)
+- [x] 6.1 Com o backend de turmas rodando e `npm run dev`, conferir manualmente: criar, renomear e excluir turmas; nome duplicado com outra caixa e com acento ("turma 1", "Turmá 1"); excluir numa aba do navegador uma turma aberta para edição em outra (`404` com o aviso); entrar como `USER` (sem o item "Configurações", e `/configuracoes/turmas` leva ao Início) (D1, D7, D9)
+- [x] 6.2 Conferir manualmente as abas e os modais contra as pranchas "Turmas · lista", "· editar turma", "· excluir turma" e "· celular" em 1440 px, em 390 px e no modo escuro, incluindo o contraste de "Excluir turma" no modo escuro, e a navegação só por teclado nas abas, nos botões das linhas e nos três modais (`Tab` preso, `Esc` fecha, foco volta) (D2, D6, D7)
 - [x] 6.3 Rodar `npm run check -- --write`, `npm run typecheck` e `npm test`, e verificar que os três terminam sem erro
