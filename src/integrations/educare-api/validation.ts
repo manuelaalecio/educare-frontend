@@ -1,44 +1,44 @@
-import { z } from "zod";
+import { z } from 'zod'
 
 // Espelha as regras do educare-backend para o login.
-export const LOGIN_MAX_LENGTH = 254;
+export const LOGIN_MAX_LENGTH = 254
 // Limite do BCrypt, contado em bytes UTF-8.
-export const PASSWORD_MAX_BYTES = 72;
+export const PASSWORD_MAX_BYTES = 72
 
-const utf8Length = (value: string) => new TextEncoder().encode(value).length;
+const utf8Length = (value: string) => new TextEncoder().encode(value).length
 
 export const loginSchema = z.object({
 	login: z
 		.string()
 		.trim()
-		.min(1, "Informe o email.")
+		.min(1, 'Informe o email.')
 		.max(LOGIN_MAX_LENGTH, `Use no máximo ${LOGIN_MAX_LENGTH} caracteres.`),
 	password: z
 		.string()
-		.min(1, "Informe a senha.")
+		.min(1, 'Informe a senha.')
 		.refine(
 			(value) => utf8Length(value) <= PASSWORD_MAX_BYTES,
-			"A senha é longa demais.",
+			'A senha é longa demais.',
 		),
-});
+})
 
-export type LoginValues = z.infer<typeof loginSchema>;
+export type LoginValues = z.infer<typeof loginSchema>
 
-export const NEW_PASSWORD_MIN_LENGTH = 8;
-export const NEW_PASSWORD_MAX_LENGTH = 72;
+export const NEW_PASSWORD_MIN_LENGTH = 8
+export const NEW_PASSWORD_MAX_LENGTH = 72
 
 const fitsPasswordBytes = (value: string) =>
-	utf8Length(value) <= PASSWORD_MAX_BYTES;
+	utf8Length(value) <= PASSWORD_MAX_BYTES
 
 export const changePasswordSchema = z
 	.object({
 		currentPassword: z
 			.string()
-			.min(1, "Informe a senha atual.")
-			.refine(fitsPasswordBytes, "A senha é longa demais."),
+			.min(1, 'Informe a senha atual.')
+			.refine(fitsPasswordBytes, 'A senha é longa demais.'),
 		newPassword: z
 			.string()
-			.min(1, "Informe a nova senha.")
+			.min(1, 'Informe a nova senha.')
 			.min(
 				NEW_PASSWORD_MIN_LENGTH,
 				`Use pelo menos ${NEW_PASSWORD_MIN_LENGTH} caracteres.`,
@@ -47,12 +47,12 @@ export const changePasswordSchema = z
 				NEW_PASSWORD_MAX_LENGTH,
 				`Use no máximo ${NEW_PASSWORD_MAX_LENGTH} caracteres.`,
 			)
-			.refine(fitsPasswordBytes, "A senha é longa demais."),
-		confirmPassword: z.string().min(1, "Confirme a nova senha."),
+			.refine(fitsPasswordBytes, 'A senha é longa demais.'),
+		confirmPassword: z.string().min(1, 'Confirme a nova senha.'),
 	})
 	.refine((values) => values.confirmPassword === values.newPassword, {
-		path: ["confirmPassword"],
-		message: "As senhas não conferem.",
-	});
+		path: ['confirmPassword'],
+		message: 'As senhas não conferem.',
+	})
 
-export type ChangePasswordValues = z.infer<typeof changePasswordSchema>;
+export type ChangePasswordValues = z.infer<typeof changePasswordSchema>

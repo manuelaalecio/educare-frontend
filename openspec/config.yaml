@@ -5,7 +5,7 @@ context: |
   Este repositório é o front-end; a API é o `educare-backend` (Spring Boot), consumida pelo servidor do front (BFF).
   Stack: TanStack Start (React 19, Vite 8, SSR na Vercel), TanStack Router/Query/Form/Table,
   Tailwind CSS v4 + shadcn/ui, Zod, Biome, Vitest + Testing Library. Gerenciador de pacotes: npm.
-  Convenções: imports de `src/` com `#/`; variáveis de ambiente em `src/env.ts` (Zod) e no `.env.example`;
+  Convenções: imports de `src/` com `#/`; aspas simples e sem ponto e vírgula (Biome); imports nomeados do React, sem `import * as React`; variáveis de ambiente em `src/env.ts` (Zod) e no `.env.example`;
   `src/routeTree.gen.ts` é gerado e não se edita.
   Dados pessoais de crianças: considerar a LGPD (não logar dados pessoais nem tokens).
   Interface, textos e artefatos do OpenSpec em português do Brasil.

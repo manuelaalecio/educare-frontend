@@ -1,115 +1,113 @@
-import { describe, expect, it } from "vitest";
-import { changePasswordSchema, loginSchema } from "./validation";
+import { describe, expect, it } from 'vitest'
+import { changePasswordSchema, loginSchema } from './validation'
 
 function errorPaths(input: { login: string; password: string }) {
-	const result = loginSchema.safeParse(input);
-	return result.success
-		? []
-		: result.error.issues.map((issue) => issue.path[0]);
+	const result = loginSchema.safeParse(input)
+	return result.success ? [] : result.error.issues.map((issue) => issue.path[0])
 }
 
-describe("loginSchema", () => {
-	it("recusa os dois campos vazios", () => {
-		expect(errorPaths({ login: "", password: "" })).toEqual([
-			"login",
-			"password",
-		]);
-	});
+describe('loginSchema', () => {
+	it('recusa os dois campos vazios', () => {
+		expect(errorPaths({ login: '', password: '' })).toEqual([
+			'login',
+			'password',
+		])
+	})
 
-	it("recusa o email só com espaços", () => {
-		expect(errorPaths({ login: "   ", password: "" })).toEqual([
-			"login",
-			"password",
-		]);
-	});
+	it('recusa o email só com espaços', () => {
+		expect(errorPaths({ login: '   ', password: '' })).toEqual([
+			'login',
+			'password',
+		])
+	})
 
-	it("tira os espaços das pontas do email", () => {
+	it('tira os espaços das pontas do email', () => {
 		const result = loginSchema.parse({
-			login: "  admin@educare.org ",
-			password: "educare123",
-		});
-		expect(result.login).toBe("admin@educare.org");
-	});
+			login: '  admin@educare.org ',
+			password: 'educare123',
+		})
+		expect(result.login).toBe('admin@educare.org')
+	})
 
-	it("recusa o email com 255 caracteres", () => {
-		const login = `${"a".repeat(243)}@educare.org`;
-		expect(login).toHaveLength(255);
-		expect(errorPaths({ login, password: "educare123" })).toEqual(["login"]);
-	});
+	it('recusa o email com 255 caracteres', () => {
+		const login = `${'a'.repeat(243)}@educare.org`
+		expect(login).toHaveLength(255)
+		expect(errorPaths({ login, password: 'educare123' })).toEqual(['login'])
+	})
 
-	it("aceita o email com 254 caracteres", () => {
-		const login = `${"a".repeat(242)}@educare.org`;
-		expect(errorPaths({ login, password: "educare123" })).toEqual([]);
-	});
+	it('aceita o email com 254 caracteres', () => {
+		const login = `${'a'.repeat(242)}@educare.org`
+		expect(errorPaths({ login, password: 'educare123' })).toEqual([])
+	})
 
-	it("aceita a senha com 72 bytes", () => {
+	it('aceita a senha com 72 bytes', () => {
 		expect(
-			errorPaths({ login: "admin@educare.org", password: "a".repeat(72) }),
-		).toEqual([]);
-	});
+			errorPaths({ login: 'admin@educare.org', password: 'a'.repeat(72) }),
+		).toEqual([])
+	})
 
-	it("recusa a senha com 40 ç (80 bytes)", () => {
+	it('recusa a senha com 40 ç (80 bytes)', () => {
 		expect(
-			errorPaths({ login: "admin@educare.org", password: "ç".repeat(40) }),
-		).toEqual(["password"]);
-	});
-});
+			errorPaths({ login: 'admin@educare.org', password: 'ç'.repeat(40) }),
+		).toEqual(['password'])
+	})
+})
 
-describe("changePasswordSchema", () => {
+describe('changePasswordSchema', () => {
 	const valid = {
-		currentPassword: "segredo123",
-		newPassword: "novaSenha456",
-		confirmPassword: "novaSenha456",
-	};
-
-	function changeErrors(input: typeof valid) {
-		const result = changePasswordSchema.safeParse(input);
-		return result.success
-			? []
-			: [...new Set(result.error.issues.map((issue) => issue.path[0]))];
+		currentPassword: 'segredo123',
+		newPassword: 'novaSenha456',
+		confirmPassword: 'novaSenha456',
 	}
 
-	it("aceita a troca válida", () => {
-		expect(changeErrors(valid)).toEqual([]);
-	});
+	function changeErrors(input: typeof valid) {
+		const result = changePasswordSchema.safeParse(input)
+		return result.success
+			? []
+			: [...new Set(result.error.issues.map((issue) => issue.path[0]))]
+	}
 
-	it("exige os três campos", () => {
+	it('aceita a troca válida', () => {
+		expect(changeErrors(valid)).toEqual([])
+	})
+
+	it('exige os três campos', () => {
 		expect(
 			changeErrors({
-				currentPassword: "",
-				newPassword: "",
-				confirmPassword: "",
+				currentPassword: '',
+				newPassword: '',
+				confirmPassword: '',
 			}),
-		).toEqual(["currentPassword", "newPassword", "confirmPassword"]);
-	});
+		).toEqual(['currentPassword', 'newPassword', 'confirmPassword'])
+	})
 
-	it("recusa a nova senha curta", () => {
+	it('recusa a nova senha curta', () => {
 		expect(
 			changeErrors({
 				...valid,
-				newPassword: "curta",
-				confirmPassword: "curta",
+				newPassword: 'curta',
+				confirmPassword: 'curta',
 			}),
-		).toEqual(["newPassword"]);
-	});
+		).toEqual(['newPassword'])
+	})
 
-	it("recusa a nova senha com mais de 72 caracteres", () => {
-		const long = "a".repeat(73);
+	it('recusa a nova senha com mais de 72 caracteres', () => {
+		const long = 'a'.repeat(73)
 		expect(
 			changeErrors({ ...valid, newPassword: long, confirmPassword: long }),
-		).toEqual(["newPassword"]);
-	});
+		).toEqual(['newPassword'])
+	})
 
-	it("recusa a nova senha com 72 caracteres e mais de 72 bytes", () => {
-		const long = "ç".repeat(40);
+	it('recusa a nova senha com 72 caracteres e mais de 72 bytes', () => {
+		const long = 'ç'.repeat(40)
 		expect(
 			changeErrors({ ...valid, newPassword: long, confirmPassword: long }),
-		).toEqual(["newPassword"]);
-	});
+		).toEqual(['newPassword'])
+	})
 
-	it("recusa a confirmação diferente", () => {
-		expect(changeErrors({ ...valid, confirmPassword: "novaSenha789" })).toEqual(
-			["confirmPassword"],
-		);
-	});
-});
+	it('recusa a confirmação diferente', () => {
+		expect(changeErrors({ ...valid, confirmPassword: 'novaSenha789' })).toEqual(
+			['confirmPassword'],
+		)
+	})
+})

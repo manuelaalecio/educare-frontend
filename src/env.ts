@@ -1,7 +1,7 @@
-import { createEnv } from "@t3-oss/env-core";
-import { z } from "zod";
+import { createEnv } from '@t3-oss/env-core'
+import { z } from 'zod'
 
-type RuntimeEnv = Record<string, string | boolean | number | undefined>;
+type RuntimeEnv = Record<string, string | boolean | number | undefined>
 
 /**
  * Cria e valida o ambiente. Separado do `env` exportado para que os testes
@@ -11,14 +11,14 @@ export function createAppEnv(
 	runtimeEnv: RuntimeEnv,
 	options: { isServer?: boolean } = {},
 ) {
-	const isProduction = runtimeEnv.NODE_ENV === "production";
+	const isProduction = runtimeEnv.NODE_ENV === 'production'
 
 	return createEnv({
 		server: {
 			EDUCARE_API_URL: z
 				.url()
-				.refine((value) => !isProduction || value.startsWith("https://"), {
-					message: "deve usar https em produção",
+				.refine((value) => !isProduction || value.startsWith('https://'), {
+					message: 'deve usar https em produção',
 				}),
 		},
 
@@ -26,7 +26,7 @@ export function createAppEnv(
 		 * The prefix that client-side variables must have. This is enforced both at
 		 * a type-level and at runtime.
 		 */
-		clientPrefix: "VITE_",
+		clientPrefix: 'VITE_',
 
 		client: {
 			VITE_APP_TITLE: z.string().min(1).optional(),
@@ -52,11 +52,11 @@ export function createAppEnv(
 
 		onValidationError: (issues) => {
 			const details = issues
-				.map((issue) => `${issue.path?.join(".") ?? "?"}: ${issue.message}`)
-				.join("; ");
-			throw new Error(`Variáveis de ambiente inválidas: ${details}`);
+				.map((issue) => `${issue.path?.join('.') ?? '?'}: ${issue.message}`)
+				.join('; ')
+			throw new Error(`Variáveis de ambiente inválidas: ${details}`)
 		},
-	});
+	})
 }
 
 /**
@@ -65,7 +65,7 @@ export function createAppEnv(
  * `import.meta.env`.
  */
 export const env = createAppEnv(
-	typeof process === "undefined"
+	typeof process === 'undefined'
 		? import.meta.env
 		: { ...process.env, ...import.meta.env },
-);
+)
