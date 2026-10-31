@@ -1,7 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import {
 	classroomCountLabel,
-	formatCreatedAt,
 	nextClassroomPlaceholder,
 	studentSummary,
 	studentsInClassroom,
@@ -35,16 +34,6 @@ describe('studentsInClassroom', () => {
 	it('concorda com o número', () => {
 		expect(studentsInClassroom(1)).toBe('1 aluno nesta turma')
 		expect(studentsInClassroom(38)).toBe('38 alunos nesta turma')
-	})
-})
-
-describe('formatCreatedAt', () => {
-	it('escreve dd/mm/aaaa', () => {
-		expect(formatCreatedAt('2026-02-02T13:00:00Z')).toBe('02/02/2026')
-	})
-
-	it('usa o fuso de São Paulo perto da meia-noite', () => {
-		expect(formatCreatedAt('2026-03-01T02:30:00Z')).toBe('28/02/2026')
 	})
 })
 

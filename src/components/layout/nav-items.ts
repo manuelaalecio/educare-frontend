@@ -6,6 +6,7 @@ import {
 	Settings,
 	Users,
 } from 'lucide-react'
+import { COORDINATOR_ROLE } from '#/integrations/educare-api/validation'
 import type { FileRouteTypes } from '#/routeTree.gen'
 
 export type NavItem = {
@@ -32,7 +33,7 @@ export const footerNav: NavItem[] = [
 		title: 'Configurações',
 		to: '/configuracoes',
 		icon: Settings,
-		roles: ['ADMIN'],
+		roles: [COORDINATOR_ROLE],
 	},
 ]
 

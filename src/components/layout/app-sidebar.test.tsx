@@ -21,14 +21,14 @@ const admin: CurrentUser = {
 	id: '1',
 	name: 'Administrador',
 	login: 'admin@educare.org',
-	role: 'ADMIN',
+	role: 'COORDENADOR',
 	createdAt: '2026-03-12T14:00:00Z',
 }
 const ana: CurrentUser = {
 	id: '2',
 	name: 'Ana Souza',
 	login: 'ana.souza@educare.org',
-	role: 'USER',
+	role: 'EDUCADOR',
 	createdAt: '2026-03-12T14:00:00Z',
 }
 
@@ -88,7 +88,7 @@ afterEach(() => {
 })
 
 describe('AppSidebar', () => {
-	it('mostra todos os itens para um ADMIN, na ordem', async () => {
+	it('mostra todos os itens para um COORDENADOR, na ordem', async () => {
 		const { screen } = await openWith(admin, '/')
 		const nav = await sidebarOf(screen)
 		expect(nav.getByText('Educare')).toBeDefined()
@@ -107,12 +107,22 @@ describe('AppSidebar', () => {
 		])
 	})
 
-	it('esconde Configurações de um USER', async () => {
+	it('esconde Configurações de um EDUCADOR', async () => {
 		const { screen } = await openWith(ana, '/')
 		const nav = await sidebarOf(screen)
 		expect(nav.getByRole('link', { name: 'Turmas' })).toBeDefined()
 		expect(nav.queryByRole('link', { name: 'Configurações' })).toBeNull()
 		expect(nav.getByRole('button', { name: 'Sair' })).toBeDefined()
+	})
+
+	it.each([
+		'ADMIN',
+		'USER',
+	])('esconde Configurações da role antiga %s', async (role) => {
+		const { screen } = await openWith({ ...admin, role }, '/')
+		const nav = await sidebarOf(screen)
+		expect(nav.getByRole('link', { name: 'Turmas' })).toBeDefined()
+		expect(nav.queryByRole('link', { name: 'Configurações' })).toBeNull()
 	})
 
 	it('navega ao clicar num item, mantendo a barra', async () => {

@@ -145,7 +145,7 @@ describe('fetchSession', () => {
 		id: '0b6f3c1e-0000-4000-8000-000000000001',
 		name: 'Ana Souza',
 		login: 'ana.souza@educare.org',
-		role: 'USER',
+		role: 'EDUCADOR',
 		createdAt: '2026-01-01T00:00:00Z',
 		updatedAt: '2026-01-01T00:00:00Z',
 	}
@@ -169,7 +169,7 @@ describe('fetchSession', () => {
 				id: me.id,
 				name: 'Ana Souza',
 				login: 'ana.souza@educare.org',
-				role: 'USER',
+				role: 'EDUCADOR',
 				createdAt: '2026-01-01T00:00:00Z',
 			},
 			expired: false,

@@ -33,19 +33,21 @@ describe('isActive', () => {
 })
 
 describe('visibleItems', () => {
-	it('ADMIN vê Configurações', () => {
-		expect(visibleItems(footerNav, 'ADMIN').map((i) => i.title)).toEqual([
+	it('COORDENADOR vê Configurações', () => {
+		expect(visibleItems(footerNav, 'COORDENADOR').map((i) => i.title)).toEqual([
 			'Configurações',
 		])
 	})
 
-	it('USER e roles desconhecidas não veem Configurações', () => {
+	it('EDUCADOR, roles antigas e desconhecidas não veem Configurações', () => {
+		expect(visibleItems(footerNav, 'EDUCADOR')).toEqual([])
+		expect(visibleItems(footerNav, 'ADMIN')).toEqual([])
 		expect(visibleItems(footerNav, 'USER')).toEqual([])
 		expect(visibleItems(footerNav, 'SECRETARIA')).toEqual([])
 	})
 
 	it('itens sem roles aparecem para todos', () => {
-		expect(visibleItems(mainNav, 'USER')).toHaveLength(4)
+		expect(visibleItems(mainNav, 'EDUCADOR')).toHaveLength(4)
 	})
 })
 

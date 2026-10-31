@@ -44,7 +44,7 @@ const ana = {
 	id: '2',
 	name: 'Ana Souza',
 	login: 'ana.souza@educare.org',
-	role: 'USER',
+	role: 'EDUCADOR',
 	createdAt: '2026-03-12T14:00:00Z',
 }
 
@@ -125,7 +125,7 @@ afterEach(() => {
 })
 
 describe('/minha-conta', () => {
-	it('mostra o perfil de um USER, só para leitura', async () => {
+	it('mostra o perfil de um EDUCADOR, só para leitura', async () => {
 		const { screen } = await open()
 		const profile = within(
 			await screen.findByRole('region', { name: 'Ana Souza' }),
@@ -136,29 +136,41 @@ describe('/minha-conta', () => {
 		).toBeDefined()
 		expect(screen.getByText('Seus dados de acesso ao Educare.')).toBeDefined()
 		expect(profile.getByText('AS')).toBeDefined()
-		expect(profile.getAllByText('Funcionário')).toHaveLength(2)
+		expect(profile.getAllByText('Educador(a)')).toHaveLength(2)
 		expect(profile.getByText('ana.souza@educare.org')).toBeDefined()
 		expect(profile.getByText('março de 2026')).toBeDefined()
 		expect(
 			profile.getByText(
-				'Nome, email e função são alterados por um administrador, em Configurações.',
+				'Nome, email e função são alterados por um(a) coordenador(a), em Configurações.',
 			),
 		).toBeDefined()
 		expect(profile.queryByRole('textbox')).toBeNull()
 	})
 
-	it('mostra a função e as iniciais de um ADMIN', async () => {
+	it('mostra a função e as iniciais de um COORDENADOR', async () => {
 		const { screen } = await open({
 			...ana,
 			name: 'Administrador',
 			login: 'admin@educare.org',
-			role: 'ADMIN',
+			role: 'COORDENADOR',
 		})
 		const profile = within(
 			await screen.findByRole('region', { name: 'Administrador' }),
 		)
 		expect(profile.getByText('AD')).toBeDefined()
-		expect(profile.getAllByText('Administrador').length).toBeGreaterThan(1)
+		expect(profile.getAllByText('Coordenador(a)')).toHaveLength(2)
+	})
+
+	it.each([
+		['USER', 'Funcionário'],
+		['ADMIN', 'Administrador'],
+	])('mostra a role antiga %s como veio', async (role, oldLabel) => {
+		const { screen } = await open({ ...ana, role })
+		const profile = within(
+			await screen.findByRole('region', { name: 'Ana Souza' }),
+		)
+		expect(profile.getAllByText(role)).toHaveLength(2)
+		expect(profile.queryByText(oldLabel)).toBeNull()
 	})
 
 	it('mostra o card Senha sem campos de senha antes de abrir o modal', async () => {

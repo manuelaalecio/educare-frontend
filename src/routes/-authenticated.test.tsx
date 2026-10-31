@@ -38,7 +38,7 @@ const ana = {
 	id: '1',
 	name: 'Ana Souza',
 	login: 'ana.souza@educare.org',
-	role: 'USER',
+	role: 'EDUCADOR',
 	createdAt: '2026-03-12T14:00:00Z',
 }
 
@@ -129,7 +129,7 @@ describe('rotas protegidas', () => {
 				id: '1',
 				name: 'Ana Souza',
 				login: 'ana.souza@educare.org',
-				role: 'USER',
+				role: 'EDUCADOR',
 				createdAt: '2026-03-12T14:00:00Z',
 			},
 			expired: false,
@@ -137,7 +137,7 @@ describe('rotas protegidas', () => {
 		const { screen } = await open('/')
 
 		expect(await screen.findByText('Bem-vindo(a), Ana Souza')).toBeDefined()
-		expect(screen.getByText('Funcionário')).toBeDefined()
+		expect(screen.getByText('Educador(a)')).toBeDefined()
 		expect(preventCaching).toHaveBeenCalled()
 	})
 

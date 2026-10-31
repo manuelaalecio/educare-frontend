@@ -1,3 +1,4 @@
+import { formatCreatedAt } from '#/components/format'
 import {
 	Table,
 	TableBody,
@@ -11,7 +12,6 @@ import {
 	ClassroomActions,
 	type ClassroomActionsProps,
 } from './classroom-actions'
-import { formatCreatedAt } from './format'
 
 type Props = Omit<ClassroomActionsProps, 'classroom'> & {
 	classrooms: Classroom[]

@@ -1,6 +1,6 @@
 import { cleanup, fireEvent, waitFor, within } from '@testing-library/react'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
-import { getCurrentUser } from '#/integrations/educare-api/functions'
+import { getCurrentUser, getUsers } from '#/integrations/educare-api/functions'
 import { attach, renderRoutes } from '#/testing/render-route'
 import { Route as AuthenticatedRoute } from './_authenticated'
 import { Route as SettingsRoute } from './_authenticated/configuracoes'
@@ -17,6 +17,15 @@ vi.mock('#/integrations/educare-api/functions', () => ({
 	createClassroom: vi.fn(),
 	renameClassroom: vi.fn(),
 	deleteClassroom: vi.fn(),
+	getUsers: vi.fn(async () => ({
+		ok: true,
+		users: [],
+		page: { number: 0, size: 20, totalElements: 0, totalPages: 0 },
+	})),
+	createUser: vi.fn(),
+	updateUser: vi.fn(),
+	resetUserPassword: vi.fn(),
+	deleteUser: vi.fn(),
 }))
 
 vi.mock('#/components/layout/sidebar-state', () => ({
@@ -38,11 +47,11 @@ const ana = {
 	id: '1',
 	name: 'Ana Souza',
 	login: 'ana.souza@educare.org',
-	role: 'USER',
+	role: 'EDUCADOR',
 	createdAt: '2026-03-12T14:00:00Z',
 }
 
-const admin = { ...ana, id: '2', name: 'Administrador', role: 'ADMIN' }
+const admin = { ...ana, id: '2', name: 'Administrador', role: 'COORDENADOR' }
 
 function open(url: string, user: typeof ana) {
 	sessionMock.mockResolvedValue({ user, expired: false } as never)
@@ -103,7 +112,7 @@ afterEach(() => {
 })
 
 describe('acesso a Configurações', () => {
-	it('USER na aba Turmas vai para o Início, sem deixar a aba no histórico', async () => {
+	it('EDUCADOR na aba Turmas vai para o Início, sem deixar a aba no histórico', async () => {
 		const { router, screen } = await open('/', ana)
 		await screen.findByText('Página inicial')
 
@@ -117,10 +126,30 @@ describe('acesso a Configurações', () => {
 		await waitFor(() => expect(router.state.location.pathname).toBe('/'))
 	})
 
-	it('USER em /configuracoes vai para o Início', async () => {
+	it('EDUCADOR em /configuracoes vai para o Início', async () => {
 		const { router, screen } = await open('/configuracoes', ana)
 		expect(router.state.location.pathname).toBe('/')
 		expect(await screen.findByText('Página inicial')).toBeDefined()
+	})
+
+	it('EDUCADOR na aba Usuários vai para o Início, sem buscar usuários', async () => {
+		const { router, screen } = await open('/configuracoes/usuarios', ana)
+		expect(router.state.location.pathname).toBe('/')
+		expect(await screen.findByText('Página inicial')).toBeDefined()
+		expect(vi.mocked(getUsers)).not.toHaveBeenCalled()
+	})
+
+	it.each([
+		['USER', '/configuracoes/turmas'],
+		['USER', '/configuracoes'],
+		['ADMIN', '/configuracoes/turmas'],
+	])('a role antiga %s em %s vai para o Início', async (role, url) => {
+		const { router, screen } = await open(url, { ...admin, role })
+		expect(router.state.location.pathname).toBe('/')
+		expect(await screen.findByText('Página inicial')).toBeDefined()
+		expect(
+			screen.queryByRole('heading', { level: 1, name: 'Configurações' }),
+		).toBeNull()
 	})
 
 	it('sem sessão, vai para o login', async () => {
@@ -149,14 +178,14 @@ describe('acesso a Configurações', () => {
 		)
 	})
 
-	it('ADMIN vê a área com a aba Turmas', async () => {
+	it('COORDENADOR vê a área com a aba Turmas', async () => {
 		const { screen } = await open('/configuracoes/turmas', admin)
 		expect(
 			await screen.findByRole('heading', { level: 1, name: 'Configurações' }),
 		).toBeDefined()
 		expect(
 			screen.getByText(
-				'Usuários do sistema e turmas da escola. Só administradores acessam esta área.',
+				'Usuários do sistema e turmas da escola. Só coordenadores(as) acessam esta área.',
 			),
 		).toBeDefined()
 		expect(
@@ -190,18 +219,5 @@ describe('abas', () => {
 			expect(router.state.location.pathname).toBe('/configuracoes/usuarios'),
 		)
 		expect(currentTabs(screen)).toEqual(['Usuários'])
-	})
-
-	it('a aba Usuários é provisória', async () => {
-		const { screen } = await open('/configuracoes/usuarios', admin)
-		expect(
-			await screen.findByRole('heading', { level: 2, name: 'Usuários' }),
-		).toBeDefined()
-		expect(
-			screen.getByText('Esta seção ainda está em construção.'),
-		).toBeDefined()
-		expect(UsersTabRoute.options.head?.({} as never)).toEqual({
-			meta: [{ title: 'Usuários · Configurações · Educare' }],
-		})
 	})
 })

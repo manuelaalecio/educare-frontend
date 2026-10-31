@@ -17,4 +17,12 @@ export const messages = {
 	classroomCreated: 'Turma criada.',
 	classroomRenamed: 'Turma renomeada.',
 	classroomDeleted: 'Turma excluída.',
+	userCreated: 'Usuário criado.',
+	userUpdated: 'Usuário atualizado.',
+	userPasswordReset:
+		'Senha redefinida. A pessoa precisa entrar de novo com a nova senha.',
+	userDeleted: 'Usuário excluído.',
+	userEmailTaken: 'Já existe um usuário com esse email.',
+	lastCoordinator: 'O sistema precisa ter ao menos um(a) coordenador(a).',
+	userNotFound: 'Esse usuário não existe mais. A lista foi atualizada.',
 } as const

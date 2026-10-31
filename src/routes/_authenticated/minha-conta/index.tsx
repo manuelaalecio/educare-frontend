@@ -82,7 +82,7 @@ function ProfileCard({ user }: { user: CurrentUser }) {
 				))}
 			</dl>
 			<p className='text-sm text-muted-foreground'>
-				Nome, email e função são alterados por um administrador, em
+				Nome, email e função são alterados por um(a) coordenador(a), em
 				Configurações.
 			</p>
 		</Card>

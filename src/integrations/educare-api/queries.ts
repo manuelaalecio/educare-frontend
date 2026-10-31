@@ -1,5 +1,5 @@
-import { queryOptions } from '@tanstack/react-query'
-import { getClassrooms, getCurrentUser } from './functions'
+import { keepPreviousData, queryOptions } from '@tanstack/react-query'
+import { getClassrooms, getCurrentUser, getUsers } from './functions'
 
 // Navegações internas reaproveitam a sessão por 5 minutos; um carregamento
 // completo (SSR) sempre chama `/auth/me`.
@@ -22,3 +22,20 @@ export const classroomsQuery = queryOptions({
 	// demoraria quase um minuto; a aba oferece "Tentar de novo".
 	retry: false,
 })
+
+// Lista de Configurações › Usuários, uma página por vez (começando em 1).
+// Buscada no navegador, como a de turmas. A página anterior continua na tela
+// enquanto a próxima carrega.
+export const usersQueryKey = ['educare-api', 'users'] as const
+
+export const usersQuery = (page: number) =>
+	queryOptions({
+		queryKey: [...usersQueryKey, page],
+		queryFn: async () => {
+			const result = await getUsers({ data: { page } })
+			if (!result.ok) throw new Error(result.message)
+			return { users: result.users, page: result.page }
+		},
+		placeholderData: keepPreviousData,
+		retry: false,
+	})

@@ -1,6 +1,6 @@
 const roleLabels: Record<string, string> = {
-	ADMIN: 'Administrador',
-	USER: 'Funcionário',
+	COORDENADOR: 'Coordenador(a)',
+	EDUCADOR: 'Educador(a)',
 }
 
 /** O contrato não fixa as roles: uma desconhecida aparece como veio. */

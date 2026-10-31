@@ -20,14 +20,14 @@ const admin: CurrentUser = {
 	id: '1',
 	name: 'Administrador',
 	login: 'admin@educare.org',
-	role: 'ADMIN',
+	role: 'COORDENADOR',
 	createdAt: '2026-03-12T14:00:00Z',
 }
 const ana: CurrentUser = {
 	id: '2',
 	name: 'Ana Souza',
 	login: 'ana.souza@educare.org',
-	role: 'USER',
+	role: 'EDUCADOR',
 	createdAt: '2026-03-12T14:00:00Z',
 }
 
@@ -108,23 +108,37 @@ describe('AppHeader', () => {
 		)
 	})
 
-	it('mostra nome e role de um ADMIN', async () => {
+	it('mostra nome e função de um COORDENADOR', async () => {
 		const { screen } = await openWith(admin)
 		const button = within(
 			await screen.findByRole('button', {
 				name: 'Menu do usuário: Administrador',
 			}),
 		)
-		expect(button.getAllByText('Administrador')).toHaveLength(2)
+		expect(button.getByText('Administrador')).toBeDefined()
+		expect(button.getByText('Coordenador(a)')).toBeDefined()
 	})
 
-	it('mostra nome e role de um USER', async () => {
+	it.each([
+		'ADMIN',
+		'USER',
+	])('mostra a role antiga %s como veio', async (role) => {
+		const { screen } = await openWith({ ...admin, role })
+		const button = within(
+			await screen.findByRole('button', {
+				name: 'Menu do usuário: Administrador',
+			}),
+		)
+		expect(button.getByText(role)).toBeDefined()
+	})
+
+	it('mostra nome e função de um EDUCADOR', async () => {
 		const { screen } = await openWith(ana)
 		const button = within(
 			await screen.findByRole('button', { name: 'Menu do usuário: Ana Souza' }),
 		)
 		expect(button.getByText('Ana Souza')).toBeDefined()
-		expect(button.getByText('Funcionário')).toBeDefined()
+		expect(button.getByText('Educador(a)')).toBeDefined()
 	})
 
 	it('mostra uma role desconhecida como veio', async () => {

@@ -174,7 +174,7 @@ describe('/login', () => {
 
 	it('leva a / quem já tem sessão', async () => {
 		sessionMock.mockResolvedValue({
-			user: { id: '1', name: 'Ana Souza', login: 'ana', role: 'USER' },
+			user: { id: '1', name: 'Ana Souza', login: 'ana', role: 'EDUCADOR' },
 			expired: false,
 		} as never)
 		const { screen, router } = await open('/login')

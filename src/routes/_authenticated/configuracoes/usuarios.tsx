@@ -1,23 +1,36 @@
 import { createFileRoute } from '@tanstack/react-router'
+import { useCallback } from 'react'
+import { z } from 'zod'
+import { UsersSection } from '#/components/users/users-section'
 
-// Provisória: a change da aba Usuários substitui esta página.
+// `?pagina=N` começa em 1; sem o parâmetro, ou com um valor inválido, é a 1.
+const searchSchema = z.object({
+	pagina: z.number().int().min(1).optional().catch(undefined),
+})
+
 export const Route = createFileRoute('/_authenticated/configuracoes/usuarios')({
+	validateSearch: searchSchema,
 	head: () => ({ meta: [{ title: 'Usuários · Configurações · Educare' }] }),
 	component: UsersTab,
 })
 
 function UsersTab() {
+	const { pagina = 1 } = Route.useSearch()
+	const { user } = Route.useRouteContext()
+	const navigate = Route.useNavigate()
+	const goToPage = useCallback(
+		(page: number, options?: { replace?: boolean }) =>
+			navigate({
+				search: { pagina: page > 1 ? page : undefined },
+				replace: options?.replace,
+			}),
+		[navigate],
+	)
 	return (
-		<section
-			aria-labelledby='titulo-cfg-usuarios'
-			className='flex flex-col gap-1 rounded-xl border bg-card p-6 text-card-foreground'
-		>
-			<h2 id='titulo-cfg-usuarios' className='text-base font-bold'>
-				Usuários
-			</h2>
-			<p className='text-sm text-muted-foreground'>
-				Esta seção ainda está em construção.
-			</p>
-		</section>
+		<UsersSection
+			page={pagina}
+			onPageChange={goToPage}
+			currentUserId={user.id}
+		/>
 	)
 }

@@ -1,12 +1,13 @@
 import { createFileRoute, Link, Outlet, redirect } from '@tanstack/react-router'
 import { LayoutGrid, type LucideIcon, UserRound } from 'lucide-react'
+import { COORDINATOR_ROLE } from '#/integrations/educare-api/validation'
 import type { FileRouteTypes } from '#/routeTree.gen'
 
-// Layout da área Configurações: só ADMIN entra. A checagem roda no servidor,
+// Layout da área Configurações: só COORDENADOR entra. A checagem roda no servidor,
 // antes de qualquer HTML da área, e vale para toda aba nova.
 export const Route = createFileRoute('/_authenticated/configuracoes')({
 	beforeLoad: ({ context }) => {
-		if (context.user.role !== 'ADMIN') {
+		if (context.user.role !== COORDINATOR_ROLE) {
 			throw redirect({ to: '/', replace: true })
 		}
 	},
@@ -29,7 +30,7 @@ function SettingsLayout() {
 					Configurações
 				</h1>
 				<p className='mt-2 text-muted-foreground'>
-					Usuários do sistema e turmas da escola. Só administradores acessam
+					Usuários do sistema e turmas da escola. Só coordenadores(as) acessam
 					esta área.
 				</p>
 			</div>

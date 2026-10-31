@@ -56,7 +56,7 @@ const admin = {
 	id: '2',
 	name: 'Administrador',
 	login: 'admin@educare.org',
-	role: 'ADMIN',
+	role: 'COORDENADOR',
 	createdAt: '2026-01-10T12:00:00Z',
 }
 

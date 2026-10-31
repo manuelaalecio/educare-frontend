@@ -1,4 +1,5 @@
 import { createServerFn } from '@tanstack/react-start'
+import { z } from 'zod'
 import {
 	fetchSession,
 	performChangePassword,
@@ -15,11 +16,22 @@ import { createApiClient } from './client'
 import { authenticated } from './middleware'
 import { requestCookies } from './request'
 import {
+	listUsers,
+	createUser as performCreateUser,
+	deleteUser as performDeleteUser,
+	resetUserPassword as performResetUserPassword,
+	updateUser as performUpdateUser,
+} from './users'
+import {
 	changePasswordSchema,
 	classroomIdSchema,
 	classroomNameSchema,
+	createUserSchema,
 	loginSchema,
 	renameClassroomSchema,
+	resetPasswordSchema,
+	updateUserSchema,
+	userIdSchema,
 } from './validation'
 
 // Server functions: só ligam a lógica de `auth.ts` ao Start. O token fica no
@@ -50,7 +62,7 @@ export const changeOwnPassword = createServerFn({ method: 'POST' })
 	)
 
 // Turmas: o `validator` aplica o mesmo schema do formulário (e tira os espaços
-// das pontas do nome). A API devolve 403 para quem não é ADMIN.
+// das pontas do nome). A API devolve 403 para quem não é COORDENADOR.
 
 export const getClassrooms = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
@@ -75,4 +87,42 @@ export const deleteClassroom = createServerFn({ method: 'POST' })
 	.validator(classroomIdSchema)
 	.handler(({ data, context }) =>
 		performDeleteClassroom(createApiClient(context.token), data),
+	)
+
+// Usuários: a API devolve 403 para quem não é COORDENADOR. Os validators
+// repetem as regras do formulário; nada aqui registra o corpo (senha e email).
+
+export const getUsers = createServerFn({ method: 'POST' })
+	.middleware([authenticated])
+	.validator(z.object({ page: z.number().int().min(1) }))
+	.handler(({ data, context }) =>
+		listUsers(createApiClient(context.token), data),
+	)
+
+export const createUser = createServerFn({ method: 'POST' })
+	.middleware([authenticated])
+	.validator(createUserSchema)
+	.handler(({ data, context }) =>
+		performCreateUser(createApiClient(context.token), data),
+	)
+
+export const updateUser = createServerFn({ method: 'POST' })
+	.middleware([authenticated])
+	.validator(updateUserSchema)
+	.handler(({ data, context }) =>
+		performUpdateUser(createApiClient(context.token), data),
+	)
+
+export const resetUserPassword = createServerFn({ method: 'POST' })
+	.middleware([authenticated])
+	.validator(resetPasswordSchema)
+	.handler(({ data, context }) =>
+		performResetUserPassword(createApiClient(context.token), data),
+	)
+
+export const deleteUser = createServerFn({ method: 'POST' })
+	.middleware([authenticated])
+	.validator(userIdSchema)
+	.handler(({ data, context }) =>
+		performDeleteUser(createApiClient(context.token), data),
 	)

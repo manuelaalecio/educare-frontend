@@ -26,7 +26,7 @@ const ana: CurrentUser = {
 	id: '2',
 	name: 'Ana Souza',
 	login: 'ana.souza@educare.org',
-	role: 'USER',
+	role: 'EDUCADOR',
 	createdAt: '2026-03-12T14:00:00Z',
 }
 
@@ -59,19 +59,19 @@ afterEach(() => {
 })
 
 describe('UserMenu', () => {
-	it('mostra as iniciais, o nome e a role no botão', async () => {
+	it('mostra as iniciais, o nome e a função no botão', async () => {
 		const { screen } = await openWith(ana)
 		const button = within(await trigger(screen))
 		expect(button.getByText('AS')).toBeDefined()
 		expect(button.getByText('Ana Souza')).toBeDefined()
-		expect(button.getByText('Funcionário')).toBeDefined()
+		expect(button.getByText('Educador(a)')).toBeDefined()
 	})
 
 	it('usa as duas primeiras letras de um nome com uma palavra', async () => {
 		const { screen } = await openWith({
 			...ana,
 			name: 'Administrador',
-			role: 'ADMIN',
+			role: 'COORDENADOR',
 		})
 		const button = within(await trigger(screen, 'Administrador'))
 		expect(button.getByText('AD')).toBeDefined()
