@@ -6,7 +6,8 @@ import { getCurrentUser } from '#/integrations/educare-api/functions'
 import { attach, renderRoutes } from '#/testing/render-route'
 import { Route as AuthenticatedRoute } from './_authenticated'
 import { Route as HomeRoute } from './_authenticated/index'
-import { Route as ChangePasswordRoute } from './_authenticated/minha-conta/senha'
+import { Route as MyAccountRoute } from './_authenticated/minha-conta/index'
+import { Route as OldPasswordRoute } from './_authenticated/minha-conta/senha'
 import { Route as TurmasRoute } from './_authenticated/turmas'
 
 vi.mock('#/integrations/educare-api/functions', () => ({
@@ -38,6 +39,7 @@ const ana = {
 	name: 'Ana Souza',
 	login: 'ana.souza@educare.org',
 	role: 'USER',
+	createdAt: '2026-03-12T14:00:00Z',
 }
 
 beforeEach(() => {
@@ -57,7 +59,11 @@ function open(url: string) {
 		return [
 			layout.addChildren([
 				attach(HomeRoute, layout, { id: '/', path: '/' }),
-				attach(ChangePasswordRoute, layout, {
+				attach(MyAccountRoute, layout, {
+					id: '/minha-conta/',
+					path: '/minha-conta',
+				}),
+				attach(OldPasswordRoute, layout, {
 					id: '/minha-conta/senha',
 					path: '/minha-conta/senha',
 				}),
@@ -74,15 +80,35 @@ afterEach(() => {
 })
 
 describe('rotas protegidas', () => {
-	it('sem sessão, leva ao login com a página pedida, sem o formulário', async () => {
+	it('sem sessão, leva ao login com a página pedida, sem o perfil', async () => {
 		sessionMock.mockResolvedValue({ user: null, expired: false } as never)
-		const { screen, router } = await open('/minha-conta/senha')
+		const { screen, router } = await open('/minha-conta')
 
 		expect(await screen.findByText('Página de login')).toBeDefined()
+		expect(router.state.location.pathname).toBe('/login')
+		expect(router.state.location.search).toEqual({ redirect: '/minha-conta' })
+		expect(screen.queryByText('ana.souza@educare.org')).toBeNull()
+	})
+
+	it('a URL antiga, sem sessão, leva ao login com ela no redirect', async () => {
+		sessionMock.mockResolvedValue({ user: null, expired: false } as never)
+		const { router } = await open('/minha-conta/senha')
+
 		expect(router.state.location.pathname).toBe('/login')
 		expect(router.state.location.search).toEqual({
 			redirect: '/minha-conta/senha',
 		})
+	})
+
+	it('a URL antiga, com sessão, leva a /minha-conta sem abrir o modal', async () => {
+		sessionMock.mockResolvedValue({ user: ana, expired: false } as never)
+		const { screen, router } = await open('/minha-conta/senha')
+
+		expect(
+			await screen.findByRole('heading', { level: 1, name: 'Minha conta' }),
+		).toBeDefined()
+		expect(router.state.location.pathname).toBe('/minha-conta')
+		expect(screen.queryByRole('dialog')).toBeNull()
 		expect(screen.queryByLabelText('Senha atual')).toBeNull()
 	})
 
@@ -104,6 +130,7 @@ describe('rotas protegidas', () => {
 				name: 'Ana Souza',
 				login: 'ana.souza@educare.org',
 				role: 'USER',
+				createdAt: '2026-03-12T14:00:00Z',
 			},
 			expired: false,
 		} as never)

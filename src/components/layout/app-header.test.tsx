@@ -21,12 +21,14 @@ const admin: CurrentUser = {
 	name: 'Administrador',
 	login: 'admin@educare.org',
 	role: 'ADMIN',
+	createdAt: '2026-03-12T14:00:00Z',
 }
 const ana: CurrentUser = {
 	id: '2',
 	name: 'Ana Souza',
 	login: 'ana.souza@educare.org',
 	role: 'USER',
+	createdAt: '2026-03-12T14:00:00Z',
 }
 
 function openWith(user: CurrentUser, path = '/') {

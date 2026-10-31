@@ -22,12 +22,14 @@ const admin: CurrentUser = {
 	name: 'Administrador',
 	login: 'admin@educare.org',
 	role: 'ADMIN',
+	createdAt: '2026-03-12T14:00:00Z',
 }
 const ana: CurrentUser = {
 	id: '2',
 	name: 'Ana Souza',
 	login: 'ana.souza@educare.org',
 	role: 'USER',
+	createdAt: '2026-03-12T14:00:00Z',
 }
 
 /** Barra lateral num layout, com páginas simples nos caminhos pedidos. */
@@ -54,7 +56,7 @@ function openWith(user: CurrentUser, url: string) {
 				page('/', 'Página inicial'),
 				page('/turmas', 'Página de turmas'),
 				page('/alunos/$id', 'Página de um aluno'),
-				page('/minha-conta/senha', 'Página de troca de senha'),
+				page('/minha-conta', 'Página Minha conta'),
 			]),
 		]
 	})
@@ -151,7 +153,7 @@ describe('AppSidebar', () => {
 	})
 
 	it('não marca nenhum item numa página fora da barra', async () => {
-		const { screen } = await openWith(ana, '/minha-conta/senha')
+		const { screen } = await openWith(ana, '/minha-conta')
 		const nav = await sidebarOf(screen)
 		expect(
 			nav

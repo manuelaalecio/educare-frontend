@@ -27,6 +27,7 @@ const ana: CurrentUser = {
 	name: 'Ana Souza',
 	login: 'ana.souza@educare.org',
 	role: 'USER',
+	createdAt: '2026-03-12T14:00:00Z',
 }
 
 function openWith(user: CurrentUser) {
@@ -89,16 +90,16 @@ describe('UserMenu', () => {
 		expect(menu.getByRole('menuitem', { name: 'Sair' })).toBeDefined()
 	})
 
-	it('Minha conta leva à troca de senha e fecha o menu', async () => {
+	it('Minha conta leva a /minha-conta e fecha o menu', async () => {
 		const { screen, router } = await openWith(ana)
 		press(await trigger(screen))
 
 		const item = await screen.findByRole('menuitem', { name: 'Minha conta' })
-		expect(item.getAttribute('href')).toBe('/minha-conta/senha')
+		expect(item.getAttribute('href')).toBe('/minha-conta')
 		fireEvent.click(item)
 
-		expect(await screen.findByText('Página de troca de senha')).toBeDefined()
-		expect(router.state.location.pathname).toBe('/minha-conta/senha')
+		expect(await screen.findByText('Página Minha conta')).toBeDefined()
+		expect(router.state.location.pathname).toBe('/minha-conta')
 		expect(screen.queryByRole('menu')).toBeNull()
 	})
 

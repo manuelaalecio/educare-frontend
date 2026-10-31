@@ -21,3 +21,16 @@ export function initials(name: string) {
 			: Array.from(words[0])[0] + Array.from(words[words.length - 1])[0]
 	return letters.toLocaleUpperCase('pt-BR')
 }
+
+// A escola fica em São Paulo, e o fuso fixo faz o SSR (em UTC) e o navegador
+// escreverem o mesmo mês.
+const memberSinceFormat = new Intl.DateTimeFormat('pt-BR', {
+	month: 'long',
+	year: 'numeric',
+	timeZone: 'America/Sao_Paulo',
+})
+
+/** Mês e ano de cadastro, como "março de 2026". */
+export function memberSince(createdAt: string) {
+	return memberSinceFormat.format(new Date(createdAt))
+}

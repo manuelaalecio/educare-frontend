@@ -14,7 +14,7 @@ type Context = { queryClient: QueryClient }
 
 /**
  * Renderiza rotas de verdade num router em memória, com páginas simples em
- * `/`, `/login`, `/minha-conta/senha` e nas áreas da barra lateral para conferir as navegações.
+ * `/`, `/login`, `/minha-conta` e nas áreas da barra lateral para conferir as navegações.
  * `routes` recebem a raiz e devolvem as rotas a testar, já ligadas a ela.
  */
 export async function renderRoutes(
@@ -32,7 +32,7 @@ export async function renderRoutes(
 	const placeholders = [
 		['/', 'Página inicial'],
 		['/login', 'Página de login'],
-		['/minha-conta/senha', 'Página de troca de senha'],
+		['/minha-conta', 'Página Minha conta'],
 		['/alunos', 'Página de alunos'],
 		['/responsaveis', 'Página de responsáveis'],
 		['/turmas', 'Página de turmas'],

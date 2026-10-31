@@ -16,8 +16,10 @@ export type FormResult =
 
 export type CurrentUser = Pick<
 	components['schemas']['MeResponse'],
-	'id' | 'name' | 'login' | 'role'
+	'id' | 'name' | 'login' | 'role' | 'createdAt'
 >
+
+type AccessToken = components['schemas']['AccessTokenResponse']
 
 /** `expired`: havia cookie, mas a API recusou o token. */
 export type Session = { user: CurrentUser | null; expired: boolean }
@@ -64,7 +66,13 @@ export async function fetchSession(deps: {
 	try {
 		const me = await unwrap(deps.api(token).GET('/api/v1/auth/me'))
 		return {
-			user: { id: me.id, name: me.name, login: me.login, role: me.role },
+			user: {
+				id: me.id,
+				name: me.name,
+				login: me.login,
+				role: me.role,
+				createdAt: me.createdAt,
+			},
 			expired: false,
 		}
 	} catch (error) {
@@ -77,11 +85,11 @@ export async function fetchSession(deps: {
 }
 
 export async function performChangePassword(
-	deps: { api: Pick<Api, 'PUT'> },
+	deps: { api: Pick<Api, 'PUT'>; cookies: Pick<SessionCookies, 'set'> },
 	values: Pick<ChangePasswordValues, 'currentPassword' | 'newPassword'>,
 ): Promise<FormResult> {
 	try {
-		await unwrap(
+		const renewed: Partial<AccessToken> | undefined = await unwrap(
 			deps.api.PUT('/api/v1/auth/me/password', {
 				body: {
 					currentPassword: values.currentPassword,
@@ -89,6 +97,11 @@ export async function performChangePassword(
 				},
 			}),
 		)
+		// A API invalida os tokens anteriores e devolve um novo para esta sessão.
+		// Sem corpo (o 204 do contrato antigo), o cookie atual continua valendo.
+		if (renewed?.accessToken && renewed.expiresIn) {
+			deps.cookies.set(renewed.accessToken, renewed.expiresIn)
+		}
 		return { ok: true }
 	} catch (error) {
 		// O 401 segue para o middleware, que encerra a sessão.

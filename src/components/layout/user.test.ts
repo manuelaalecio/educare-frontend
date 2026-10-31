@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { initials, roleLabel } from './user'
+import { initials, memberSince, roleLabel } from './user'
 
 describe('initials', () => {
 	it.each([
@@ -23,5 +23,15 @@ describe('roleLabel', () => {
 
 	it('mostra uma role desconhecida como veio', () => {
 		expect(roleLabel('SECRETARIA')).toBe('SECRETARIA')
+	})
+})
+
+describe('memberSince', () => {
+	it.each([
+		['2026-03-12T14:00:00Z', 'março de 2026'],
+		// 31 de outubro, 22h30, em São Paulo.
+		['2026-11-01T01:30:00Z', 'outubro de 2026'],
+	])('%s → %s', (createdAt, expected) => {
+		expect(memberSince(createdAt)).toBe(expected)
 	})
 })

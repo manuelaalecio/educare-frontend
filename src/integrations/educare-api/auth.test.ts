@@ -159,7 +159,7 @@ describe('fetchSession', () => {
 		expect(api).not.toHaveBeenCalled()
 	})
 
-	it('com cookie devolve o usuário de /auth/me, sem o token', async () => {
+	it('com cookie devolve o usuário de /auth/me com createdAt, sem o token', async () => {
 		const api = vi.fn(() => apiReturning(200, me))
 		const session = await fetchSession({ api, cookies: jar(TOKEN) })
 
@@ -170,6 +170,7 @@ describe('fetchSession', () => {
 				name: 'Ana Souza',
 				login: 'ana.souza@educare.org',
 				role: 'USER',
+				createdAt: '2026-01-01T00:00:00Z',
 			},
 			expired: false,
 		})
@@ -190,19 +191,35 @@ describe('fetchSession', () => {
 
 describe('performChangePassword', () => {
 	const values = { currentPassword: 'segredo123', newPassword: 'novaSenha456' }
+	const renewed = {
+		accessToken: 'eyJhbGciOiJIUzI1NiJ9.token-novo',
+		expiresIn: 28800,
+		tokenType: 'Bearer',
+	}
 
-	it('envia só a senha atual e a nova e devolve ok no 204', async () => {
-		const api = apiReturning(204)
-		await expect(performChangePassword({ api }, values)).resolves.toEqual({
-			ok: true,
-		})
+	it('envia só a senha atual e a nova e grava o token novo do 200', async () => {
+		const api = apiReturning(200, renewed)
+		const cookies = jar(TOKEN)
+		await expect(
+			performChangePassword({ api, cookies }, values),
+		).resolves.toEqual({ ok: true })
 		expect((api as { PUT: ReturnType<typeof vi.fn> }).PUT).toHaveBeenCalledWith(
 			'/api/v1/auth/me/password',
 			{ body: values },
 		)
+		expect(cookies.set).toHaveBeenCalledWith(renewed.accessToken, 28800)
+	})
+
+	it('no 204 sem corpo devolve ok e mantém o cookie', async () => {
+		const cookies = jar(TOKEN)
+		await expect(
+			performChangePassword({ api: apiReturning(204), cookies }, values),
+		).resolves.toEqual({ ok: true })
+		expect(cookies.set).not.toHaveBeenCalled()
 	})
 
 	it('devolve os erros por campo do 400', async () => {
+		const cookies = jar(TOKEN)
 		const result = await performChangePassword(
 			{
 				api: apiReturning(400, {
@@ -210,6 +227,7 @@ describe('performChangePassword', () => {
 					status: 400,
 					errors: [{ field: 'currentPassword', message: 'está incorreta' }],
 				}),
+				cookies,
 			},
 			values,
 		)
@@ -217,11 +235,30 @@ describe('performChangePassword', () => {
 			ok: false,
 			fieldErrors: { currentPassword: 'está incorreta' },
 		})
+		expect(cookies.set).not.toHaveBeenCalled()
+	})
+
+	it('devolve a mensagem de muitas tentativas no 429', async () => {
+		const result = await performChangePassword(
+			{
+				api: apiReturning(429, { title: 'Too Many Requests', status: 429 }),
+				cookies: jar(TOKEN),
+			},
+			values,
+		)
+		expect(result).toMatchObject({
+			ok: false,
+			kind: 'too-many-requests',
+			message: messages.tooManyAttempts,
+		})
 	})
 
 	it('devolve sem permissão no 403', async () => {
 		const result = await performChangePassword(
-			{ api: apiReturning(403, { title: 'Forbidden', status: 403 }) },
+			{
+				api: apiReturning(403, { title: 'Forbidden', status: 403 }),
+				cookies: jar(TOKEN),
+			},
 			values,
 		)
 		expect(result).toMatchObject({
@@ -234,7 +271,10 @@ describe('performChangePassword', () => {
 	it('deixa o 401 seguir para o middleware', async () => {
 		await expect(
 			performChangePassword(
-				{ api: apiReturning(401, { title: 'Unauthorized', status: 401 }) },
+				{
+					api: apiReturning(401, { title: 'Unauthorized', status: 401 }),
+					cookies: jar(TOKEN),
+				},
 				values,
 			),
 		).rejects.toMatchObject({ kind: 'unauthorized' })

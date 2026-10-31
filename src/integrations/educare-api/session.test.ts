@@ -35,9 +35,9 @@ describe('runWithSession', () => {
 	it('sem cookie, manda para o login sem chamar a API', async () => {
 		const jar = cookies()
 		const run = vi.fn()
-		const error = await caught(runWithSession(jar, '/minha-conta/senha', run))
+		const error = await caught(runWithSession(jar, '/minha-conta', run))
 
-		expectSessionExpired(error, '/minha-conta/senha')
+		expectSessionExpired(error, '/minha-conta')
 		expect(run).not.toHaveBeenCalled()
 		expect(jar.clear).toHaveBeenCalled()
 	})

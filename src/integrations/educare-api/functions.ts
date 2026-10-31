@@ -31,5 +31,8 @@ export const changeOwnPassword = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(changePasswordSchema)
 	.handler(({ data, context }) =>
-		performChangePassword({ api: createApiClient(context.token) }, data),
+		performChangePassword(
+			{ api: createApiClient(context.token), cookies: requestCookies },
+			data,
+		),
 	)

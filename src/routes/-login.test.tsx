@@ -66,13 +66,11 @@ describe('/login', () => {
 
 	it('leva ao destino pedido depois do login', async () => {
 		loginMock.mockResolvedValue({ ok: true } as never)
-		const { screen, router } = await open(
-			'/login?redirect=%2Fminha-conta%2Fsenha',
-		)
+		const { screen, router } = await open('/login?redirect=%2Fminha-conta')
 		fillAndSubmit(screen, 'ana.souza@educare.org', 'segredo123')
 
-		expect(await screen.findByText('Página de troca de senha')).toBeDefined()
-		expect(router.state.location.pathname).toBe('/minha-conta/senha')
+		expect(await screen.findByText('Página Minha conta')).toBeDefined()
+		expect(router.state.location.pathname).toBe('/minha-conta')
 		expect(loginMock).toHaveBeenCalledWith({
 			data: { login: 'ana.souza@educare.org', password: 'segredo123' },
 		})

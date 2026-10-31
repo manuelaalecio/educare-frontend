@@ -16,6 +16,7 @@ import { Route as AuthenticatedAlunosRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedResponsaveisRouteImport } from './routes/_authenticated/responsaveis'
 import { Route as AuthenticatedTurmasRouteImport } from './routes/_authenticated/turmas'
+import { Route as AuthenticatedMinhaContaIndexRouteImport } from './routes/_authenticated/minha-conta/index'
 import { Route as AuthenticatedMinhaContaSenhaRouteImport } from './routes/_authenticated/minha-conta/senha'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -54,6 +55,12 @@ const AuthenticatedTurmasRoute = AuthenticatedTurmasRouteImport.update({
   path: '/turmas',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMinhaContaIndexRoute =
+  AuthenticatedMinhaContaIndexRouteImport.update({
+    id: '/minha-conta/',
+    path: '/minha-conta/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMinhaContaSenhaRoute =
   AuthenticatedMinhaContaSenhaRouteImport.update({
     id: '/minha-conta/senha',
@@ -69,6 +76,7 @@ export interface FileRoutesByFullPath {
   '/responsaveis': typeof AuthenticatedResponsaveisRoute
   '/turmas': typeof AuthenticatedTurmasRoute
   '/minha-conta/senha': typeof AuthenticatedMinhaContaSenhaRoute
+  '/minha-conta/': typeof AuthenticatedMinhaContaIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
@@ -78,6 +86,7 @@ export interface FileRoutesByTo {
   '/turmas': typeof AuthenticatedTurmasRoute
   '/': typeof AuthenticatedIndexRoute
   '/minha-conta/senha': typeof AuthenticatedMinhaContaSenhaRoute
+  '/minha-conta': typeof AuthenticatedMinhaContaIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -89,6 +98,7 @@ export interface FileRoutesById {
   '/_authenticated/turmas': typeof AuthenticatedTurmasRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/minha-conta/senha': typeof AuthenticatedMinhaContaSenhaRoute
+  '/_authenticated/minha-conta/': typeof AuthenticatedMinhaContaIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -100,6 +110,7 @@ export interface FileRouteTypes {
     | '/responsaveis'
     | '/turmas'
     | '/minha-conta/senha'
+    | '/minha-conta/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
@@ -109,6 +120,7 @@ export interface FileRouteTypes {
     | '/turmas'
     | '/'
     | '/minha-conta/senha'
+    | '/minha-conta'
   id:
     | '__root__'
     | '/_authenticated'
@@ -119,6 +131,7 @@ export interface FileRouteTypes {
     | '/_authenticated/turmas'
     | '/_authenticated/'
     | '/_authenticated/minha-conta/senha'
+    | '/_authenticated/minha-conta/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -177,6 +190,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTurmasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/minha-conta/': {
+      id: '/_authenticated/minha-conta/'
+      path: '/minha-conta'
+      fullPath: '/minha-conta/'
+      preLoaderRoute: typeof AuthenticatedMinhaContaIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/minha-conta/senha': {
       id: '/_authenticated/minha-conta/senha'
       path: '/minha-conta/senha'
@@ -194,6 +214,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTurmasRoute: typeof AuthenticatedTurmasRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedMinhaContaSenhaRoute: typeof AuthenticatedMinhaContaSenhaRoute
+  AuthenticatedMinhaContaIndexRoute: typeof AuthenticatedMinhaContaIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -203,6 +224,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTurmasRoute: AuthenticatedTurmasRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedMinhaContaSenhaRoute: AuthenticatedMinhaContaSenhaRoute,
+  AuthenticatedMinhaContaIndexRoute: AuthenticatedMinhaContaIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

@@ -6,6 +6,7 @@ export type ApiErrorKind =
 	| 'forbidden'
 	| 'not-found'
 	| 'conflict'
+	| 'too-many-requests'
 	| 'unavailable'
 
 /** Erro de chamada à API, já sem detalhes internos da resposta. */
@@ -75,6 +76,8 @@ const kindByStatus: Record<number, ApiErrorKind> = {
 
 /** Converte uma resposta de erro (corpo já lido pelo openapi-fetch). */
 export function toApiError(status: number, body: unknown): ApiError {
+	// Um proxy pode devolver 429 sem ProblemDetail; o corpo não é repassado.
+	if (status === 429) return new ApiError('too-many-requests', { status })
 	const kind = kindByStatus[status]
 	if (!kind || !isProblemDetail(body)) {
 		return new ApiError('unavailable', { status })
@@ -128,6 +131,8 @@ export function messageFor(error: ApiError): string | undefined {
 			return error.detail ?? messages.notFound
 		case 'conflict':
 			return error.detail ?? messages.conflict
+		case 'too-many-requests':
+			return messages.tooManyAttempts
 	}
 }
 

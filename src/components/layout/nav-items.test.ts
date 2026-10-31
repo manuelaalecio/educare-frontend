@@ -54,7 +54,7 @@ describe('pageTitle', () => {
 		['/responsaveis', 'Responsáveis'],
 		['/turmas', 'Turmas'],
 		['/configuracoes', 'Configurações'],
-		['/minha-conta/senha', 'Minha conta'],
+		['/minha-conta', 'Minha conta'],
 		['/desconhecida', 'Educare'],
 	])('%s → %s', (pathname, title) => {
 		expect(pageTitle(pathname)).toBe(title)

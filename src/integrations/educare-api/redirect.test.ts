@@ -3,7 +3,7 @@ import { safeRedirect } from './redirect'
 
 describe('safeRedirect', () => {
 	it('volta para a página pedida', () => {
-		expect(safeRedirect('/minha-conta/senha')).toBe('/minha-conta/senha')
+		expect(safeRedirect('/minha-conta')).toBe('/minha-conta')
 		expect(safeRedirect('/criancas?pagina=2')).toBe('/criancas?pagina=2')
 	})
 
@@ -22,7 +22,7 @@ describe('safeRedirect', () => {
 	it.each([
 		['ausente', undefined],
 		['número', 42],
-		['lista', ['/minha-conta/senha']],
+		['lista', ['/minha-conta']],
 	])('ignora valor %s', (_, value) => {
 		expect(safeRedirect(value)).toBe('/')
 	})

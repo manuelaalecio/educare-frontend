@@ -58,7 +58,7 @@ export function UserMenu({ user }: { user: CurrentUser }) {
 					asChild
 					className='min-h-11 gap-2.5 px-2.5 font-semibold'
 				>
-					<Link to='/minha-conta/senha'>
+					<Link to='/minha-conta'>
 						<UserRound aria-hidden='true' className='size-[18px]' />
 						Minha conta
 					</Link>
