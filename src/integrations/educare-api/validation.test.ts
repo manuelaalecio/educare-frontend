@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest'
-import { changePasswordSchema, loginSchema } from './validation'
+import {
+	changePasswordSchema,
+	classroomNameSchema,
+	loginSchema,
+	renameClassroomSchema,
+} from './validation'
 
 function errorPaths(input: { login: string; password: string }) {
 	const result = loginSchema.safeParse(input)
@@ -109,5 +114,46 @@ describe('changePasswordSchema', () => {
 		expect(changeErrors({ ...valid, confirmPassword: 'novaSenha789' })).toEqual(
 			['confirmPassword'],
 		)
+	})
+})
+
+describe('classroomNameSchema', () => {
+	const errorsOf = (name: string) => {
+		const result = classroomNameSchema.safeParse({ name })
+		return result.success ? [] : result.error.issues.map((i) => i.message)
+	}
+
+	it('recusa o nome vazio ou só com espaços', () => {
+		expect(errorsOf('')).toEqual(['Informe o nome da turma.'])
+		expect(errorsOf('   ')).toEqual(['Informe o nome da turma.'])
+	})
+
+	it('aceita 60 caracteres e recusa 61', () => {
+		expect(errorsOf('a'.repeat(60))).toEqual([])
+		expect(errorsOf('a'.repeat(61))).toEqual(['Use no máximo 60 caracteres.'])
+	})
+
+	it('conta o tamanho depois de tirar os espaços das pontas', () => {
+		expect(errorsOf(`  ${'a'.repeat(60)}  `)).toEqual([])
+	})
+
+	it('tira os espaços das pontas', () => {
+		expect(classroomNameSchema.parse({ name: '  Turma 3 ' })).toEqual({
+			name: 'Turma 3',
+		})
+	})
+})
+
+describe('renameClassroomSchema', () => {
+	it('exige um id UUID', () => {
+		expect(
+			renameClassroomSchema.safeParse({ id: '1', name: 'Turma 1' }).success,
+		).toBe(false)
+		expect(
+			renameClassroomSchema.parse({
+				id: '7d3f1c2a-1b2c-4d5e-8f90-a1b2c3d4e5f6',
+				name: ' Turma 1 ',
+			}),
+		).toEqual({ id: '7d3f1c2a-1b2c-4d5e-8f90-a1b2c3d4e5f6', name: 'Turma 1' })
 	})
 })

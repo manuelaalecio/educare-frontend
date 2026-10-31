@@ -22,6 +22,9 @@ describe('isActive', () => {
 	it('os demais itens valem no caminho e abaixo dele', () => {
 		expect(isActive(byTitle('Alunos'), '/alunos')).toBe(true)
 		expect(isActive(byTitle('Alunos'), '/alunos/123')).toBe(true)
+		expect(isActive(byTitle('Configurações'), '/configuracoes/turmas')).toBe(
+			true,
+		)
 	})
 
 	it('não confunde caminhos com o mesmo prefixo', () => {
@@ -54,6 +57,7 @@ describe('pageTitle', () => {
 		['/responsaveis', 'Responsáveis'],
 		['/turmas', 'Turmas'],
 		['/configuracoes', 'Configurações'],
+		['/configuracoes/turmas', 'Configurações'],
 		['/minha-conta', 'Minha conta'],
 		['/desconhecida', 'Educare'],
 	])('%s → %s', (pathname, title) => {

@@ -37,6 +37,8 @@ export async function renderRoutes(
 		['/responsaveis', 'Página de responsáveis'],
 		['/turmas', 'Página de turmas'],
 		['/configuracoes', 'Página de configurações'],
+		['/configuracoes/usuarios', 'Aba de usuários'],
+		['/configuracoes/turmas', 'Aba de turmas'],
 	]
 		.filter(([path]) => !taken.has(path))
 		.map(([path, text]) =>

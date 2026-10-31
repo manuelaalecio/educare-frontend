@@ -2,7 +2,6 @@ import { cleanup } from '@testing-library/react'
 import { afterEach, describe, expect, it } from 'vitest'
 import { attach, renderRoutes } from '#/testing/render-route'
 import { Route as AlunosRoute } from './_authenticated/alunos'
-import { Route as ConfiguracoesRoute } from './_authenticated/configuracoes'
 import { Route as ResponsaveisRoute } from './_authenticated/responsaveis'
 import { Route as TurmasRoute } from './_authenticated/turmas'
 
@@ -13,7 +12,6 @@ describe('páginas provisórias', () => {
 		['/alunos', 'Alunos', AlunosRoute],
 		['/responsaveis', 'Responsáveis', ResponsaveisRoute],
 		['/turmas', 'Turmas', TurmasRoute],
-		['/configuracoes', 'Configurações', ConfiguracoesRoute],
 	])('%s mostra o título e o aviso', async (path, title, route) => {
 		const { screen } = await renderRoutes(path, (root) => [
 			attach(route, root, { id: path, path }),

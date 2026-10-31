@@ -56,3 +56,28 @@ export const changePasswordSchema = z
 	})
 
 export type ChangePasswordValues = z.infer<typeof changePasswordSchema>
+
+// Espelha as regras do educare-backend para o nome da turma. O tamanho é
+// contado em unidades UTF-16, como o `String.length` do Java.
+export const CLASSROOM_NAME_MAX_LENGTH = 60
+
+export const classroomNameSchema = z.object({
+	name: z
+		.string()
+		.trim()
+		.min(1, 'Informe o nome da turma.')
+		.max(
+			CLASSROOM_NAME_MAX_LENGTH,
+			`Use no máximo ${CLASSROOM_NAME_MAX_LENGTH} caracteres.`,
+		),
+})
+
+export type ClassroomNameValues = z.infer<typeof classroomNameSchema>
+
+export const classroomIdSchema = z.object({ id: z.uuid() })
+
+export const renameClassroomSchema = classroomIdSchema.extend(
+	classroomNameSchema.shape,
+)
+
+export type RenameClassroomValues = z.infer<typeof renameClassroomSchema>

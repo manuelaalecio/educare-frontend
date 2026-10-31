@@ -16,6 +16,9 @@ import { Route as AuthenticatedAlunosRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedResponsaveisRouteImport } from './routes/_authenticated/responsaveis'
 import { Route as AuthenticatedTurmasRouteImport } from './routes/_authenticated/turmas'
+import { Route as AuthenticatedConfiguracoesIndexRouteImport } from './routes/_authenticated/configuracoes/index'
+import { Route as AuthenticatedConfiguracoesTurmasRouteImport } from './routes/_authenticated/configuracoes/turmas'
+import { Route as AuthenticatedConfiguracoesUsuariosRouteImport } from './routes/_authenticated/configuracoes/usuarios'
 import { Route as AuthenticatedMinhaContaIndexRouteImport } from './routes/_authenticated/minha-conta/index'
 import { Route as AuthenticatedMinhaContaSenhaRouteImport } from './routes/_authenticated/minha-conta/senha'
 
@@ -55,6 +58,24 @@ const AuthenticatedTurmasRoute = AuthenticatedTurmasRouteImport.update({
   path: '/turmas',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedConfiguracoesIndexRoute =
+  AuthenticatedConfiguracoesIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedConfiguracoesRoute,
+  } as any)
+const AuthenticatedConfiguracoesTurmasRoute =
+  AuthenticatedConfiguracoesTurmasRouteImport.update({
+    id: '/turmas',
+    path: '/turmas',
+    getParentRoute: () => AuthenticatedConfiguracoesRoute,
+  } as any)
+const AuthenticatedConfiguracoesUsuariosRoute =
+  AuthenticatedConfiguracoesUsuariosRouteImport.update({
+    id: '/usuarios',
+    path: '/usuarios',
+    getParentRoute: () => AuthenticatedConfiguracoesRoute,
+  } as any)
 const AuthenticatedMinhaContaIndexRoute =
   AuthenticatedMinhaContaIndexRouteImport.update({
     id: '/minha-conta/',
@@ -72,20 +93,25 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
   '/alunos': typeof AuthenticatedAlunosRoute
-  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRouteWithChildren
   '/responsaveis': typeof AuthenticatedResponsaveisRoute
   '/turmas': typeof AuthenticatedTurmasRoute
+  '/configuracoes/turmas': typeof AuthenticatedConfiguracoesTurmasRoute
+  '/configuracoes/usuarios': typeof AuthenticatedConfiguracoesUsuariosRoute
   '/minha-conta/senha': typeof AuthenticatedMinhaContaSenhaRoute
+  '/configuracoes/': typeof AuthenticatedConfiguracoesIndexRoute
   '/minha-conta/': typeof AuthenticatedMinhaContaIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/alunos': typeof AuthenticatedAlunosRoute
-  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
   '/responsaveis': typeof AuthenticatedResponsaveisRoute
   '/turmas': typeof AuthenticatedTurmasRoute
   '/': typeof AuthenticatedIndexRoute
+  '/configuracoes/turmas': typeof AuthenticatedConfiguracoesTurmasRoute
+  '/configuracoes/usuarios': typeof AuthenticatedConfiguracoesUsuariosRoute
   '/minha-conta/senha': typeof AuthenticatedMinhaContaSenhaRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesIndexRoute
   '/minha-conta': typeof AuthenticatedMinhaContaIndexRoute
 }
 export interface FileRoutesById {
@@ -93,11 +119,14 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authenticated/alunos': typeof AuthenticatedAlunosRoute
-  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRouteWithChildren
   '/_authenticated/responsaveis': typeof AuthenticatedResponsaveisRoute
   '/_authenticated/turmas': typeof AuthenticatedTurmasRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
+  '/_authenticated/configuracoes/turmas': typeof AuthenticatedConfiguracoesTurmasRoute
+  '/_authenticated/configuracoes/usuarios': typeof AuthenticatedConfiguracoesUsuariosRoute
   '/_authenticated/minha-conta/senha': typeof AuthenticatedMinhaContaSenhaRoute
+  '/_authenticated/configuracoes/': typeof AuthenticatedConfiguracoesIndexRoute
   '/_authenticated/minha-conta/': typeof AuthenticatedMinhaContaIndexRoute
 }
 export interface FileRouteTypes {
@@ -109,17 +138,22 @@ export interface FileRouteTypes {
     | '/configuracoes'
     | '/responsaveis'
     | '/turmas'
+    | '/configuracoes/turmas'
+    | '/configuracoes/usuarios'
     | '/minha-conta/senha'
+    | '/configuracoes/'
     | '/minha-conta/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/alunos'
-    | '/configuracoes'
     | '/responsaveis'
     | '/turmas'
     | '/'
+    | '/configuracoes/turmas'
+    | '/configuracoes/usuarios'
     | '/minha-conta/senha'
+    | '/configuracoes'
     | '/minha-conta'
   id:
     | '__root__'
@@ -130,7 +164,10 @@ export interface FileRouteTypes {
     | '/_authenticated/responsaveis'
     | '/_authenticated/turmas'
     | '/_authenticated/'
+    | '/_authenticated/configuracoes/turmas'
+    | '/_authenticated/configuracoes/usuarios'
     | '/_authenticated/minha-conta/senha'
+    | '/_authenticated/configuracoes/'
     | '/_authenticated/minha-conta/'
   fileRoutesById: FileRoutesById
 }
@@ -190,6 +227,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedTurmasRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/configuracoes/': {
+      id: '/_authenticated/configuracoes/'
+      path: '/'
+      fullPath: '/configuracoes/'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesIndexRouteImport
+      parentRoute: typeof AuthenticatedConfiguracoesRoute
+    }
+    '/_authenticated/configuracoes/turmas': {
+      id: '/_authenticated/configuracoes/turmas'
+      path: '/turmas'
+      fullPath: '/configuracoes/turmas'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesTurmasRouteImport
+      parentRoute: typeof AuthenticatedConfiguracoesRoute
+    }
+    '/_authenticated/configuracoes/usuarios': {
+      id: '/_authenticated/configuracoes/usuarios'
+      path: '/usuarios'
+      fullPath: '/configuracoes/usuarios'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesUsuariosRouteImport
+      parentRoute: typeof AuthenticatedConfiguracoesRoute
+    }
     '/_authenticated/minha-conta/': {
       id: '/_authenticated/minha-conta/'
       path: '/minha-conta'
@@ -207,9 +265,29 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedConfiguracoesRouteChildren {
+  AuthenticatedConfiguracoesTurmasRoute: typeof AuthenticatedConfiguracoesTurmasRoute
+  AuthenticatedConfiguracoesUsuariosRoute: typeof AuthenticatedConfiguracoesUsuariosRoute
+  AuthenticatedConfiguracoesIndexRoute: typeof AuthenticatedConfiguracoesIndexRoute
+}
+
+const AuthenticatedConfiguracoesRouteChildren: AuthenticatedConfiguracoesRouteChildren =
+  {
+    AuthenticatedConfiguracoesTurmasRoute:
+      AuthenticatedConfiguracoesTurmasRoute,
+    AuthenticatedConfiguracoesUsuariosRoute:
+      AuthenticatedConfiguracoesUsuariosRoute,
+    AuthenticatedConfiguracoesIndexRoute: AuthenticatedConfiguracoesIndexRoute,
+  }
+
+const AuthenticatedConfiguracoesRouteWithChildren =
+  AuthenticatedConfiguracoesRoute._addFileChildren(
+    AuthenticatedConfiguracoesRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedAlunosRoute: typeof AuthenticatedAlunosRoute
-  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
+  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRouteWithChildren
   AuthenticatedResponsaveisRoute: typeof AuthenticatedResponsaveisRoute
   AuthenticatedTurmasRoute: typeof AuthenticatedTurmasRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
@@ -219,7 +297,7 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAlunosRoute: AuthenticatedAlunosRoute,
-  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
+  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRouteWithChildren,
   AuthenticatedResponsaveisRoute: AuthenticatedResponsaveisRoute,
   AuthenticatedTurmasRoute: AuthenticatedTurmasRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,

@@ -10,4 +10,11 @@ export const messages = {
 	validation: 'Confira os campos destacados.',
 	notFound: 'Não encontramos o que você procurou.',
 	conflict: 'Já existe um registro com esses dados.',
+	classroomNameTaken: 'Já existe uma turma com esse nome.',
+	classroomHasStudents:
+		'Esta turma tem alunos. Tire os alunos da turma antes de excluí-la.',
+	classroomNotFound: 'Essa turma não existe mais. A lista foi atualizada.',
+	classroomCreated: 'Turma criada.',
+	classroomRenamed: 'Turma renomeada.',
+	classroomDeleted: 'Turma excluída.',
 } as const
