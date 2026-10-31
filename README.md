@@ -38,8 +38,9 @@ O app roda em http://localhost:3000. Para entrar no sistema, a API precisa estar
 
 ## Convenções
 
-- Imports a partir de `src/` usam o alias `#/` (ex.: `import { Button } from "#/components/ui/button"`).
-- Componentes do shadcn são adicionados com `npx shadcn@latest add <componente>`.
+- Imports a partir de `src/` usam o alias `#/` (ex.: `import { Button } from '#/components/ui/button'`).
+- Componentes do shadcn são adicionados com `npx shadcn@latest add <componente>`. O shadcn gera `import * as React`: troque por imports nomeados.
+- Estilo pelo Biome: aspas simples (inclusive no JSX), sem ponto e vírgula quando não é necessário, e imports nomeados do React (`import { useState } from 'react'`), sem `import * as React`.
 - `src/routeTree.gen.ts` é gerado automaticamente: não edite à mão.
 - Variáveis de ambiente novas precisam ser declaradas em `src/env.ts` e no `.env.example`. As que vão para o navegador precisam começar com `VITE_`.
 
@@ -82,3 +83,5 @@ Configure `EDUCARE_API_URL` com a URL `https://` da API, nos ambientes Productio
 ### Rotas protegidas
 
 Toda página sob `src/routes/_authenticated/` exige sessão. Sem sessão, o usuário vai para `/login?redirect=<página>`, já na renderização no servidor. Uma rota criada fora dessa pasta é pública.
+
+Essas páginas ganham a barra lateral e o cabeçalho (com o título da página, o botão de tema e o menu do usuário) do layout em `src/routes/_authenticated.tsx`. A página só precisa do próprio `<main>`. Para pôr uma página nova na barra lateral, acrescente um item em `src/components/layout/nav-items.ts`: o título dele também vira o título do cabeçalho, e `roles` limita quem vê o item. O estado recolhido da barra fica no cookie `sidebar_state`, lido no servidor.

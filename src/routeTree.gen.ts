@@ -12,6 +12,10 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
+import { Route as AuthenticatedAlunosRouteImport } from './routes/_authenticated/alunos'
+import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
+import { Route as AuthenticatedResponsaveisRouteImport } from './routes/_authenticated/responsaveis'
+import { Route as AuthenticatedTurmasRouteImport } from './routes/_authenticated/turmas'
 import { Route as AuthenticatedMinhaContaSenhaRouteImport } from './routes/_authenticated/minha-conta/senha'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -28,6 +32,28 @@ const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAlunosRoute = AuthenticatedAlunosRouteImport.update({
+  id: '/alunos',
+  path: '/alunos',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedConfiguracoesRoute =
+  AuthenticatedConfiguracoesRouteImport.update({
+    id: '/configuracoes',
+    path: '/configuracoes',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedResponsaveisRoute =
+  AuthenticatedResponsaveisRouteImport.update({
+    id: '/responsaveis',
+    path: '/responsaveis',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedTurmasRoute = AuthenticatedTurmasRouteImport.update({
+  id: '/turmas',
+  path: '/turmas',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedMinhaContaSenhaRoute =
   AuthenticatedMinhaContaSenhaRouteImport.update({
     id: '/minha-conta/senha',
@@ -38,10 +64,18 @@ const AuthenticatedMinhaContaSenhaRoute =
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
+  '/alunos': typeof AuthenticatedAlunosRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/responsaveis': typeof AuthenticatedResponsaveisRoute
+  '/turmas': typeof AuthenticatedTurmasRoute
   '/minha-conta/senha': typeof AuthenticatedMinhaContaSenhaRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
+  '/alunos': typeof AuthenticatedAlunosRoute
+  '/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/responsaveis': typeof AuthenticatedResponsaveisRoute
+  '/turmas': typeof AuthenticatedTurmasRoute
   '/': typeof AuthenticatedIndexRoute
   '/minha-conta/senha': typeof AuthenticatedMinhaContaSenhaRoute
 }
@@ -49,18 +83,40 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
+  '/_authenticated/alunos': typeof AuthenticatedAlunosRoute
+  '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRoute
+  '/_authenticated/responsaveis': typeof AuthenticatedResponsaveisRoute
+  '/_authenticated/turmas': typeof AuthenticatedTurmasRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/minha-conta/senha': typeof AuthenticatedMinhaContaSenhaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/minha-conta/senha'
+  fullPaths:
+    | '/'
+    | '/login'
+    | '/alunos'
+    | '/configuracoes'
+    | '/responsaveis'
+    | '/turmas'
+    | '/minha-conta/senha'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/' | '/minha-conta/senha'
+  to:
+    | '/login'
+    | '/alunos'
+    | '/configuracoes'
+    | '/responsaveis'
+    | '/turmas'
+    | '/'
+    | '/minha-conta/senha'
   id:
     | '__root__'
     | '/_authenticated'
     | '/login'
+    | '/_authenticated/alunos'
+    | '/_authenticated/configuracoes'
+    | '/_authenticated/responsaveis'
+    | '/_authenticated/turmas'
     | '/_authenticated/'
     | '/_authenticated/minha-conta/senha'
   fileRoutesById: FileRoutesById
@@ -93,6 +149,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/alunos': {
+      id: '/_authenticated/alunos'
+      path: '/alunos'
+      fullPath: '/alunos'
+      preLoaderRoute: typeof AuthenticatedAlunosRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/configuracoes': {
+      id: '/_authenticated/configuracoes'
+      path: '/configuracoes'
+      fullPath: '/configuracoes'
+      preLoaderRoute: typeof AuthenticatedConfiguracoesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/responsaveis': {
+      id: '/_authenticated/responsaveis'
+      path: '/responsaveis'
+      fullPath: '/responsaveis'
+      preLoaderRoute: typeof AuthenticatedResponsaveisRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/turmas': {
+      id: '/_authenticated/turmas'
+      path: '/turmas'
+      fullPath: '/turmas'
+      preLoaderRoute: typeof AuthenticatedTurmasRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/minha-conta/senha': {
       id: '/_authenticated/minha-conta/senha'
       path: '/minha-conta/senha'
@@ -104,11 +188,19 @@ declare module '@tanstack/react-router' {
 }
 
 interface AuthenticatedRouteChildren {
+  AuthenticatedAlunosRoute: typeof AuthenticatedAlunosRoute
+  AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRoute
+  AuthenticatedResponsaveisRoute: typeof AuthenticatedResponsaveisRoute
+  AuthenticatedTurmasRoute: typeof AuthenticatedTurmasRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
   AuthenticatedMinhaContaSenhaRoute: typeof AuthenticatedMinhaContaSenhaRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
+  AuthenticatedAlunosRoute: AuthenticatedAlunosRoute,
+  AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRoute,
+  AuthenticatedResponsaveisRoute: AuthenticatedResponsaveisRoute,
+  AuthenticatedTurmasRoute: AuthenticatedTurmasRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
   AuthenticatedMinhaContaSenhaRoute: AuthenticatedMinhaContaSenhaRoute,
 }
