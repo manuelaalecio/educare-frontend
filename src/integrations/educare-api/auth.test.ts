@@ -106,6 +106,30 @@ describe('performLogin', () => {
 		})
 		expect(cookies.set).not.toHaveBeenCalled()
 	})
+
+	it('converte o certificado TLS recusado em indisponível sem gravar cookie', async () => {
+		const cookies = jar()
+		const failing = vi.fn(() =>
+			Promise.reject(
+				new TypeError('fetch failed', {
+					cause: Object.assign(new Error('self-signed certificate'), {
+						code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+					}),
+				}),
+			),
+		)
+		const result = await performLogin(
+			{ api: { POST: failing } as never, cookies },
+			credentials,
+		)
+
+		expect(result).toMatchObject({
+			ok: false,
+			kind: 'unavailable',
+			message: messages.unavailable,
+		})
+		expect(cookies.set).not.toHaveBeenCalled()
+	})
 })
 
 describe('cookie de sessão', () => {

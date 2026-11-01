@@ -97,6 +97,29 @@ describe('createApiClient', () => {
 		expect(log).not.toContain('token-da-sessao')
 	})
 
+	it('registra a falha de certificado TLS sem dados sensíveis nem o motivo do OpenSSL', async () => {
+		fetchMock.mockRejectedValue(
+			new TypeError('fetch failed', {
+				cause: Object.assign(new Error('self-signed certificate'), {
+					code: 'DEPTH_ZERO_SELF_SIGNED_CERT',
+				}),
+			}),
+		)
+		await expect(
+			createApiClient('token-da-sessao').POST('/api/v1/auth/login', {
+				body: { login: 'ana.souza@educare.org', password: 'segredo123' },
+			}),
+		).rejects.toThrow()
+
+		const log = logged()
+		expect(log).toContain('POST /api/v1/auth/login falhou (TypeError)')
+		expect(log).not.toContain('ana.souza')
+		expect(log).not.toContain('segredo123')
+		expect(log).not.toContain('token-da-sessao')
+		expect(log).not.toContain('self-signed')
+		expect(log).not.toContain('DEPTH_ZERO_SELF_SIGNED_CERT')
+	})
+
 	it('registra método, caminho e status da resposta', async () => {
 		fetchMock.mockResolvedValue(
 			json({ title: 'Unauthorized', status: 401 }, 401),

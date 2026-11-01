@@ -76,9 +76,21 @@ Se um campo usado pelo front sumir do contrato, o `npm run typecheck` acusa.
 
 ### Vercel
 
-Configure `EDUCARE_API_URL` com a URL `https://` da API, nos ambientes Production e Preview.
+Configure `EDUCARE_API_URL=https://136-248-80-75.sslip.io` nos ambientes Production e Preview. Os previews também rodam com `NODE_ENV=production`, então também não sobem sem `https`. A API roda no k3s da Oracle, com certificado da Let's Encrypt emitido e renovado pelo cert-manager (veja o README do `educare-backend`). Se o IP da VM mudar, o host do Ingress muda, e a variável precisa acompanhar.
 
-**Cuidado com os previews:** não há ambiente de homologação, então os previews usam a mesma `EDUCARE_API_URL` e falam com a API de produção, com dados reais de crianças. Teste neles como se fosse produção.
+Antes de trocar a variável, confira por fora que a API responde com o certificado de produção:
+
+```bash
+curl -sS https://136-248-80-75.sslip.io/actuator/health   # sem -k: tem que dar 200
+openssl s_client -connect 136-248-80-75.sslip.io:443 -servername 136-248-80-75.sslip.io </dev/null 2>/dev/null \
+  | openssl x509 -noout -issuer -dates                      # O=Let's Encrypt, sem "(STAGING)" nem "TRAEFIK"
+```
+
+Uma variável alterada só vale para deploys novos: depois de mudar, faça o redeploy.
+
+O servidor do front verifica o certificado da API. Um certificado inválido (autoassinado, de staging, vencido ou de outro host) aparece na tela como "Não foi possível falar com o servidor. Tente de novo em instantes.", e no log da função como `[educare-api] POST /api/v1/auth/login falhou (TypeError)`. **Nunca** configure `NODE_TLS_REJECT_UNAUTHORIZED=0` nem outra forma de desligar essa verificação: corrija o certificado na API.
+
+**Cuidado com os previews:** não há ambiente de homologação, então os previews usam a mesma `EDUCARE_API_URL` e falam com a API de produção. Teste neles como se fosse produção. Até existir o backup automático do Postgres, produção e previews só recebem dados fictícios, nunca dados reais de crianças.
 
 ### Rotas protegidas
 

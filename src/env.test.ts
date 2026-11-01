@@ -14,13 +14,22 @@ describe('createAppEnv', () => {
 		expect(env.EDUCARE_API_URL).toBe('https://api.educare.example')
 	})
 
-	it('Produção com URL http: falha citando EDUCARE_API_URL', () => {
-		expect(() =>
+	it('Produção com a URL da API na Oracle: inicia normalmente', () => {
+		const env = serverEnv({
+			NODE_ENV: 'production',
+			EDUCARE_API_URL: 'https://136-248-80-75.sslip.io',
+		})
+		expect(env.EDUCARE_API_URL).toBe('https://136-248-80-75.sslip.io')
+	})
+
+	it('Produção com URL http: falha dizendo que deve usar https', () => {
+		const start = () =>
 			serverEnv({
 				NODE_ENV: 'production',
-				EDUCARE_API_URL: 'http://129.153.10.20',
-			}),
-		).toThrow(/EDUCARE_API_URL/)
+				EDUCARE_API_URL: 'http://136.248.80.75',
+			})
+		expect(start).toThrow(/EDUCARE_API_URL/)
+		expect(start).toThrow('deve usar https em produção')
 	})
 
 	it('Variável ausente: falha citando EDUCARE_API_URL', () => {
