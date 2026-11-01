@@ -1,32 +1,32 @@
 schema: spec-driven
 
-# Project context (optional)
-# This is shown to AI when creating artifacts.
-# Add your tech stack, conventions, style guides, domain knowledge, etc.
-# Example:
-#   context: |
-#     Tech stack: TypeScript, React, Node.js
-#     We use conventional commits
-#     Domain: e-commerce platform
+context: |
+  Educare: sistema de gestão escolar (crianças, responsáveis, rematrícula), usado pelos funcionários da escola.
+  Este repositório é o front-end; a API é o `educare-backend` (Spring Boot), consumida pelo servidor do front (BFF).
+  Stack: TanStack Start (React 19, Vite 8, SSR na Vercel), TanStack Router/Query/Form/Table,
+  Tailwind CSS v4 + shadcn/ui, Zod, Biome, Vitest + Testing Library. Gerenciador de pacotes: npm.
+  Convenções: imports de `src/` com `#/`; aspas simples e sem ponto e vírgula (Biome); imports nomeados do React, sem `import * as React`; variáveis de ambiente em `src/env.ts` (Zod) e no `.env.example`;
+  `src/routeTree.gen.ts` é gerado e não se edita.
+  Dados pessoais de crianças: considerar a LGPD (não logar dados pessoais nem tokens).
+  Interface, textos e artefatos do OpenSpec em português do Brasil.
 
-# Per-artifact rules (optional)
-# Add custom rules for specific artifacts.
-# Example:
-#   rules:
-#     proposal:
-#       - Keep proposals under 500 words
-#       - Always include a "Non-goals" section
-#     tasks:
-#       - Break tasks into chunks of max 2 hours
+rules:
+  proposal:
+    - Escrever em português do Brasil
+    - Incluir uma seção "Non-goals"
+    - Na seção "Impact", apontar a ordem e a sobreposição com outras changes em andamento
+  specs:
+    - Escrever em português do Brasil, com SHALL nos requisitos
+    - Textos da interface entre aspas, exatamente como aparecem na tela
+  design:
+    - Numerar as decisões (D1, D2...) e registrar as alternativas descartadas
+    - Incluir uma seção de testes dizendo o que é unitário, o que é Testing Library e o que é manual
+  tasks:
+    - Cada tarefa cita as decisões do design que implementa (D1, D2...)
+    - Cada tarefa termina com como verificar (teste, comando ou conferência manual)
+    - A última tarefa roda `npm run check -- --write`, `npm run typecheck` e `npm test`
 
-# Per-operation guidance (optional)
-# Add advisory guidance for how apply and archive work should be conducted.
-# This is separate from artifact rules above.
-# Example:
-#   operations:
-#     apply:
-#       guidance:
-#         - Keep test summaries concise
-#     archive:
-#       guidance:
-#         - Summarize the archive outcome before finishing
+operations:
+  apply:
+    guidance:
+      - Se a implementação divergir do design, avisar e oferecer atualizar o design.md

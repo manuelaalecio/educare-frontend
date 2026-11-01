@@ -9,10 +9,12 @@
 		"ignoreUnknown": false,
 		"includes": [
 			"**/src/**/*",
+			"**/scripts/**/*",
 			"**/index.html",
 			"**/vite.config.ts",
 			"**/vitest.config.ts",
 			"!**/src/routeTree.gen.ts",
+			"!**/src/integrations/educare-api/schema.gen.ts",
 			"!**/src/styles.css"
 		]
 	},
@@ -24,12 +26,17 @@
 	"linter": {
 		"enabled": true,
 		"rules": {
-			"recommended": true
+			"recommended": true,
+			"performance": {
+				"noNamespaceImport": "error"
+			}
 		}
 	},
 	"javascript": {
 		"formatter": {
-			"quoteStyle": "double"
+			"quoteStyle": "single",
+			"jsxQuoteStyle": "single",
+			"semicolons": "asNeeded"
 		}
 	}
 }

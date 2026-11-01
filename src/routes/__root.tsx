@@ -1,57 +1,67 @@
-import { TanStackDevtools } from "@tanstack/react-devtools";
-import type { QueryClient } from "@tanstack/react-query";
+import { TanStackDevtools } from '@tanstack/react-devtools'
+import type { QueryClient } from '@tanstack/react-query'
 import {
 	createRootRouteWithContext,
 	HeadContent,
 	Scripts,
-} from "@tanstack/react-router";
-import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
-import appCss from "../styles.css?url";
+} from '@tanstack/react-router'
+import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import type { ReactNode } from 'react'
+import { themeScript } from '#/components/theme/theme-script'
+import { Toaster } from '#/components/ui/sonner'
+import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
+import appCss from '../styles.css?url'
 
 interface MyRouterContext {
-	queryClient: QueryClient;
+	queryClient: QueryClient
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
 	head: () => ({
 		meta: [
 			{
-				charSet: "utf-8",
+				charSet: 'utf-8',
 			},
 			{
-				name: "viewport",
-				content: "width=device-width, initial-scale=1",
+				name: 'viewport',
+				content: 'width=device-width, initial-scale=1',
 			},
 			{
-				title: "TanStack Start Starter",
+				title: 'Educare',
 			},
 		],
 		links: [
 			{
-				rel: "stylesheet",
+				rel: 'stylesheet',
 				href: appCss,
 			},
 		],
 	}),
 	shellComponent: RootDocument,
-});
+})
 
-function RootDocument({ children }: { children: React.ReactNode }) {
+function RootDocument({ children }: { children: ReactNode }) {
 	return (
-		<html lang="en">
+		<html lang='pt-BR' suppressHydrationWarning>
 			<head>
+				{/*
+				 * Aplica o tema antes da primeira pintura (veja theme-script.ts).
+				 * Com uma Content-Security-Policy, este script vai precisar de nonce ou hash.
+				 */}
+				{/* biome-ignore lint/security/noDangerouslySetInnerHtml: texto fixo, sem dado do usuário */}
+				<script dangerouslySetInnerHTML={{ __html: themeScript }} />
 				<HeadContent />
 			</head>
 			<body>
 				{children}
+				<Toaster />
 				<TanStackDevtools
 					config={{
-						position: "bottom-right",
+						position: 'bottom-right',
 					}}
 					plugins={[
 						{
-							name: "Tanstack Router",
+							name: 'Tanstack Router',
 							render: <TanStackRouterDevtoolsPanel />,
 						},
 						TanStackQueryDevtools,
@@ -60,5 +70,5 @@ function RootDocument({ children }: { children: React.ReactNode }) {
 				<Scripts />
 			</body>
 		</html>
-	);
+	)
 }

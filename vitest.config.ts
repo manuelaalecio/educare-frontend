@@ -1,10 +1,13 @@
-import viteReact from "@vitejs/plugin-react";
-import { defineConfig } from "vitest/config";
+import viteReact from '@vitejs/plugin-react'
+import { defineConfig } from 'vitest/config'
 
 export default defineConfig({
 	resolve: { tsconfigPaths: true },
 	plugins: [viteReact()],
 	test: {
-		environment: "jsdom",
+		environment: 'jsdom',
+		env: {
+			EDUCARE_API_URL: 'http://localhost:8080',
+		},
 	},
-});
+})
