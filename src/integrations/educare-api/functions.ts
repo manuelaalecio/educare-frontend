@@ -7,6 +7,14 @@ import {
 	performLogout,
 } from './auth'
 import {
+	listChildClassrooms,
+	listChildren,
+	createChild as performCreateChild,
+	deleteChild as performDeleteChild,
+	getChild as performGetChild,
+	updateChild as performUpdateChild,
+} from './children'
+import {
 	listClassrooms,
 	createClassroom as performCreateClassroom,
 	deleteClassroom as performDeleteClassroom,
@@ -24,12 +32,15 @@ import {
 } from './users'
 import {
 	changePasswordSchema,
+	childIdSchema,
+	childRequestSchema,
 	classroomIdSchema,
 	classroomNameSchema,
 	createUserSchema,
 	loginSchema,
 	renameClassroomSchema,
 	resetPasswordSchema,
+	updateChildSchema,
 	updateUserSchema,
 	userIdSchema,
 } from './validation'
@@ -125,4 +136,55 @@ export const deleteUser = createServerFn({ method: 'POST' })
 	.validator(userIdSchema)
 	.handler(({ data, context }) =>
 		performDeleteUser(createApiClient(context.token), data),
+	)
+
+// Crianças: os filtros da lista são os da URL (`pagina` começa em 1). Nada
+// aqui registra corpo, resposta ou id em log (LGPD): são dados de crianças.
+
+const childrenFiltersSchema = z.object({
+	nome: z.string().optional(),
+	turma: z.uuid().optional(),
+	pagina: z.number().int().min(1),
+})
+
+export const getChildren = createServerFn({ method: 'POST' })
+	.middleware([authenticated])
+	.validator(childrenFiltersSchema)
+	.handler(({ data, context }) =>
+		listChildren(createApiClient(context.token), data),
+	)
+
+export const getChild = createServerFn({ method: 'POST' })
+	.middleware([authenticated])
+	.validator(childIdSchema)
+	.handler(({ data, context }) =>
+		performGetChild(createApiClient(context.token), data),
+	)
+
+export const getChildClassrooms = createServerFn({ method: 'POST' })
+	.middleware([authenticated])
+	.validator(childIdSchema)
+	.handler(({ data, context }) =>
+		listChildClassrooms(createApiClient(context.token), data),
+	)
+
+export const createChild = createServerFn({ method: 'POST' })
+	.middleware([authenticated])
+	.validator(childRequestSchema)
+	.handler(({ data, context }) =>
+		performCreateChild(createApiClient(context.token), data),
+	)
+
+export const updateChild = createServerFn({ method: 'POST' })
+	.middleware([authenticated])
+	.validator(updateChildSchema)
+	.handler(({ data, context }) =>
+		performUpdateChild(createApiClient(context.token), data),
+	)
+
+export const deleteChild = createServerFn({ method: 'POST' })
+	.middleware([authenticated])
+	.validator(childIdSchema)
+	.handler(({ data, context }) =>
+		performDeleteChild(createApiClient(context.token), data),
 	)

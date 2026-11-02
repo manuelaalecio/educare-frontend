@@ -12,15 +12,18 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthenticatedIndexRouteImport } from './routes/_authenticated/index'
-import { Route as AuthenticatedAlunosRouteImport } from './routes/_authenticated/alunos'
 import { Route as AuthenticatedConfiguracoesRouteImport } from './routes/_authenticated/configuracoes'
 import { Route as AuthenticatedResponsaveisRouteImport } from './routes/_authenticated/responsaveis'
 import { Route as AuthenticatedTurmasRouteImport } from './routes/_authenticated/turmas'
 import { Route as AuthenticatedConfiguracoesIndexRouteImport } from './routes/_authenticated/configuracoes/index'
 import { Route as AuthenticatedConfiguracoesTurmasRouteImport } from './routes/_authenticated/configuracoes/turmas'
 import { Route as AuthenticatedConfiguracoesUsuariosRouteImport } from './routes/_authenticated/configuracoes/usuarios'
+import { Route as AuthenticatedCriancasIndexRouteImport } from './routes/_authenticated/criancas/index'
+import { Route as AuthenticatedCriancasNovaRouteImport } from './routes/_authenticated/criancas/nova'
 import { Route as AuthenticatedMinhaContaIndexRouteImport } from './routes/_authenticated/minha-conta/index'
 import { Route as AuthenticatedMinhaContaSenhaRouteImport } from './routes/_authenticated/minha-conta/senha'
+import { Route as AuthenticatedCriancasChildIdIndexRouteImport } from './routes/_authenticated/criancas/$childId/index'
+import { Route as AuthenticatedCriancasChildIdEditarRouteImport } from './routes/_authenticated/criancas/$childId/editar'
 
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
   id: '/_authenticated',
@@ -34,11 +37,6 @@ const LoginRoute = LoginRouteImport.update({
 const AuthenticatedIndexRoute = AuthenticatedIndexRouteImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedAlunosRoute = AuthenticatedAlunosRouteImport.update({
-  id: '/alunos',
-  path: '/alunos',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedConfiguracoesRoute =
@@ -76,6 +74,18 @@ const AuthenticatedConfiguracoesUsuariosRoute =
     path: '/usuarios',
     getParentRoute: () => AuthenticatedConfiguracoesRoute,
   } as any)
+const AuthenticatedCriancasIndexRoute =
+  AuthenticatedCriancasIndexRouteImport.update({
+    id: '/criancas/',
+    path: '/criancas/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCriancasNovaRoute =
+  AuthenticatedCriancasNovaRouteImport.update({
+    id: '/criancas/nova',
+    path: '/criancas/nova',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMinhaContaIndexRoute =
   AuthenticatedMinhaContaIndexRouteImport.update({
     id: '/minha-conta/',
@@ -88,87 +98,117 @@ const AuthenticatedMinhaContaSenhaRoute =
     path: '/minha-conta/senha',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedCriancasChildIdIndexRoute =
+  AuthenticatedCriancasChildIdIndexRouteImport.update({
+    id: '/criancas/$childId/',
+    path: '/criancas/$childId/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedCriancasChildIdEditarRoute =
+  AuthenticatedCriancasChildIdEditarRouteImport.update({
+    id: '/criancas/$childId/editar',
+    path: '/criancas/$childId/editar',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof AuthenticatedIndexRoute
   '/login': typeof LoginRoute
-  '/alunos': typeof AuthenticatedAlunosRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesRouteWithChildren
   '/responsaveis': typeof AuthenticatedResponsaveisRoute
   '/turmas': typeof AuthenticatedTurmasRoute
   '/configuracoes/turmas': typeof AuthenticatedConfiguracoesTurmasRoute
   '/configuracoes/usuarios': typeof AuthenticatedConfiguracoesUsuariosRoute
+  '/criancas/nova': typeof AuthenticatedCriancasNovaRoute
   '/minha-conta/senha': typeof AuthenticatedMinhaContaSenhaRoute
   '/configuracoes/': typeof AuthenticatedConfiguracoesIndexRoute
+  '/criancas/': typeof AuthenticatedCriancasIndexRoute
   '/minha-conta/': typeof AuthenticatedMinhaContaIndexRoute
+  '/criancas/$childId/editar': typeof AuthenticatedCriancasChildIdEditarRoute
+  '/criancas/$childId/': typeof AuthenticatedCriancasChildIdIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
-  '/alunos': typeof AuthenticatedAlunosRoute
   '/responsaveis': typeof AuthenticatedResponsaveisRoute
   '/turmas': typeof AuthenticatedTurmasRoute
   '/': typeof AuthenticatedIndexRoute
   '/configuracoes/turmas': typeof AuthenticatedConfiguracoesTurmasRoute
   '/configuracoes/usuarios': typeof AuthenticatedConfiguracoesUsuariosRoute
+  '/criancas/nova': typeof AuthenticatedCriancasNovaRoute
   '/minha-conta/senha': typeof AuthenticatedMinhaContaSenhaRoute
   '/configuracoes': typeof AuthenticatedConfiguracoesIndexRoute
+  '/criancas': typeof AuthenticatedCriancasIndexRoute
   '/minha-conta': typeof AuthenticatedMinhaContaIndexRoute
+  '/criancas/$childId/editar': typeof AuthenticatedCriancasChildIdEditarRoute
+  '/criancas/$childId': typeof AuthenticatedCriancasChildIdIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/login': typeof LoginRoute
-  '/_authenticated/alunos': typeof AuthenticatedAlunosRoute
   '/_authenticated/configuracoes': typeof AuthenticatedConfiguracoesRouteWithChildren
   '/_authenticated/responsaveis': typeof AuthenticatedResponsaveisRoute
   '/_authenticated/turmas': typeof AuthenticatedTurmasRoute
   '/_authenticated/': typeof AuthenticatedIndexRoute
   '/_authenticated/configuracoes/turmas': typeof AuthenticatedConfiguracoesTurmasRoute
   '/_authenticated/configuracoes/usuarios': typeof AuthenticatedConfiguracoesUsuariosRoute
+  '/_authenticated/criancas/nova': typeof AuthenticatedCriancasNovaRoute
   '/_authenticated/minha-conta/senha': typeof AuthenticatedMinhaContaSenhaRoute
   '/_authenticated/configuracoes/': typeof AuthenticatedConfiguracoesIndexRoute
+  '/_authenticated/criancas/': typeof AuthenticatedCriancasIndexRoute
   '/_authenticated/minha-conta/': typeof AuthenticatedMinhaContaIndexRoute
+  '/_authenticated/criancas/$childId/editar': typeof AuthenticatedCriancasChildIdEditarRoute
+  '/_authenticated/criancas/$childId/': typeof AuthenticatedCriancasChildIdIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/login'
-    | '/alunos'
     | '/configuracoes'
     | '/responsaveis'
     | '/turmas'
     | '/configuracoes/turmas'
     | '/configuracoes/usuarios'
+    | '/criancas/nova'
     | '/minha-conta/senha'
     | '/configuracoes/'
+    | '/criancas/'
     | '/minha-conta/'
+    | '/criancas/$childId/editar'
+    | '/criancas/$childId/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
-    | '/alunos'
     | '/responsaveis'
     | '/turmas'
     | '/'
     | '/configuracoes/turmas'
     | '/configuracoes/usuarios'
+    | '/criancas/nova'
     | '/minha-conta/senha'
     | '/configuracoes'
+    | '/criancas'
     | '/minha-conta'
+    | '/criancas/$childId/editar'
+    | '/criancas/$childId'
   id:
     | '__root__'
     | '/_authenticated'
     | '/login'
-    | '/_authenticated/alunos'
     | '/_authenticated/configuracoes'
     | '/_authenticated/responsaveis'
     | '/_authenticated/turmas'
     | '/_authenticated/'
     | '/_authenticated/configuracoes/turmas'
     | '/_authenticated/configuracoes/usuarios'
+    | '/_authenticated/criancas/nova'
     | '/_authenticated/minha-conta/senha'
     | '/_authenticated/configuracoes/'
+    | '/_authenticated/criancas/'
     | '/_authenticated/minha-conta/'
+    | '/_authenticated/criancas/$childId/editar'
+    | '/_authenticated/criancas/$childId/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -197,13 +237,6 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof AuthenticatedIndexRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/alunos': {
-      id: '/_authenticated/alunos'
-      path: '/alunos'
-      fullPath: '/alunos'
-      preLoaderRoute: typeof AuthenticatedAlunosRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/configuracoes': {
@@ -248,6 +281,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedConfiguracoesUsuariosRouteImport
       parentRoute: typeof AuthenticatedConfiguracoesRoute
     }
+    '/_authenticated/criancas/': {
+      id: '/_authenticated/criancas/'
+      path: '/criancas'
+      fullPath: '/criancas/'
+      preLoaderRoute: typeof AuthenticatedCriancasIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/criancas/nova': {
+      id: '/_authenticated/criancas/nova'
+      path: '/criancas/nova'
+      fullPath: '/criancas/nova'
+      preLoaderRoute: typeof AuthenticatedCriancasNovaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/minha-conta/': {
       id: '/_authenticated/minha-conta/'
       path: '/minha-conta'
@@ -260,6 +307,20 @@ declare module '@tanstack/react-router' {
       path: '/minha-conta/senha'
       fullPath: '/minha-conta/senha'
       preLoaderRoute: typeof AuthenticatedMinhaContaSenhaRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/criancas/$childId/': {
+      id: '/_authenticated/criancas/$childId/'
+      path: '/criancas/$childId'
+      fullPath: '/criancas/$childId/'
+      preLoaderRoute: typeof AuthenticatedCriancasChildIdIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/criancas/$childId/editar': {
+      id: '/_authenticated/criancas/$childId/editar'
+      path: '/criancas/$childId/editar'
+      fullPath: '/criancas/$childId/editar'
+      preLoaderRoute: typeof AuthenticatedCriancasChildIdEditarRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
   }
@@ -286,23 +347,31 @@ const AuthenticatedConfiguracoesRouteWithChildren =
   )
 
 interface AuthenticatedRouteChildren {
-  AuthenticatedAlunosRoute: typeof AuthenticatedAlunosRoute
   AuthenticatedConfiguracoesRoute: typeof AuthenticatedConfiguracoesRouteWithChildren
   AuthenticatedResponsaveisRoute: typeof AuthenticatedResponsaveisRoute
   AuthenticatedTurmasRoute: typeof AuthenticatedTurmasRoute
   AuthenticatedIndexRoute: typeof AuthenticatedIndexRoute
+  AuthenticatedCriancasNovaRoute: typeof AuthenticatedCriancasNovaRoute
   AuthenticatedMinhaContaSenhaRoute: typeof AuthenticatedMinhaContaSenhaRoute
+  AuthenticatedCriancasIndexRoute: typeof AuthenticatedCriancasIndexRoute
   AuthenticatedMinhaContaIndexRoute: typeof AuthenticatedMinhaContaIndexRoute
+  AuthenticatedCriancasChildIdEditarRoute: typeof AuthenticatedCriancasChildIdEditarRoute
+  AuthenticatedCriancasChildIdIndexRoute: typeof AuthenticatedCriancasChildIdIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
-  AuthenticatedAlunosRoute: AuthenticatedAlunosRoute,
   AuthenticatedConfiguracoesRoute: AuthenticatedConfiguracoesRouteWithChildren,
   AuthenticatedResponsaveisRoute: AuthenticatedResponsaveisRoute,
   AuthenticatedTurmasRoute: AuthenticatedTurmasRoute,
   AuthenticatedIndexRoute: AuthenticatedIndexRoute,
+  AuthenticatedCriancasNovaRoute: AuthenticatedCriancasNovaRoute,
   AuthenticatedMinhaContaSenhaRoute: AuthenticatedMinhaContaSenhaRoute,
+  AuthenticatedCriancasIndexRoute: AuthenticatedCriancasIndexRoute,
   AuthenticatedMinhaContaIndexRoute: AuthenticatedMinhaContaIndexRoute,
+  AuthenticatedCriancasChildIdEditarRoute:
+    AuthenticatedCriancasChildIdEditarRoute,
+  AuthenticatedCriancasChildIdIndexRoute:
+    AuthenticatedCriancasChildIdIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

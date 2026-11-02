@@ -15,7 +15,7 @@ import { studentsInClassroom } from './format'
 export type ClassroomFormProps = {
 	mode: 'create' | 'edit'
 	initialName?: string
-	/** Alunos da turma, mostrado só ao editar. */
+	/** Crianças da turma, mostrado só ao editar. */
 	studentCount?: number
 	placeholder?: string
 	onSubmit: (values: ClassroomNameValues) => Promise<ClassroomResult>

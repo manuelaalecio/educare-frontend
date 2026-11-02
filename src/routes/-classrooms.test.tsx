@@ -193,7 +193,7 @@ describe('lista de turmas', () => {
 			within(rows[0])
 				.getAllByRole('columnheader')
 				.map((cell) => cell.textContent),
-		).toEqual(['Nome', 'Alunos', 'Meninos', 'Meninas', 'Criada em', 'Ações'])
+		).toEqual(['Nome', 'Crianças', 'Meninos', 'Meninas', 'Criada em', 'Ações'])
 		expect(
 			within(rows[1])
 				.getAllByRole('cell')
@@ -240,9 +240,9 @@ describe('lista de turmas', () => {
 		const mobile = list(screen)
 
 		expect(
-			mobile.getByText('38 alunos · 20 meninos e 18 meninas'),
+			mobile.getByText('38 crianças · 20 meninos e 18 meninas'),
 		).toBeDefined()
-		expect(mobile.getByText('1 aluno · 1 menino e 0 meninas')).toBeDefined()
+		expect(mobile.getByText('1 criança · 1 menino e 0 meninas')).toBeDefined()
 		expect(mobile.getByRole('button', { name: 'Editar Turma 1' })).toBeDefined()
 		expect(
 			mobile.getByRole('button', { name: 'Excluir Turma 1' }),
@@ -434,16 +434,16 @@ describe('criar turma', () => {
 })
 
 describe('renomear turma', () => {
-	it('abre o modal com o nome e os alunos da turma', async () => {
+	it('abre o modal com o nome e as crianças da turma', async () => {
 		listReturns(listing(classroom('Turma 1', { studentCount: 38 })))
 		const screen = await open()
 		const dialog = await openDialog(screen, 'Editar Turma 1', 'Editar turma')
 
 		const input = dialog.getByLabelText('Nome da turma') as HTMLInputElement
 		expect(input.value).toBe('Turma 1')
-		expect(dialog.getByText('38 alunos nesta turma')).toBeDefined()
+		expect(dialog.getByText('38 crianças nesta turma')).toBeDefined()
 		expect(
-			dialog.getByText('Mudar o nome não tira nenhum aluno da turma.'),
+			dialog.getByText('Mudar o nome não tira nenhuma criança da turma.'),
 		).toBeDefined()
 		await waitFor(() => expect(document.activeElement).toBe(input))
 	})
@@ -484,7 +484,7 @@ describe('excluir turma', () => {
 
 		expect(
 			dialog.getByText(
-				'A turma sai da lista e dos gráficos do Início. Só dá para excluir turmas sem alunos.',
+				'A turma sai da lista e dos gráficos do Início. Só dá para excluir turmas sem crianças.',
 			),
 		).toBeDefined()
 		expect(dialog.getByText('Essa ação não pode ser desfeita.')).toBeDefined()
@@ -522,12 +522,21 @@ describe('excluir turma', () => {
 		expect(rowNames(screen)).toEqual(['Turma 1'])
 	})
 
-	it('mostra que a turma tem alunos no 409', async () => {
+	it.each([
+		[
+			'tem crianças',
+			'Esta turma tem crianças. Tire as crianças da turma antes de excluí-la.',
+		],
+		[
+			'tem histórico de crianças',
+			'Esta turma já teve crianças e fica no histórico delas. Por isso, não pode ser excluída.',
+		],
+	])('mostra no 409 que a turma %s', async (_, message) => {
 		listReturns(listing(turma1))
 		deleteMock.mockResolvedValue({
 			ok: false,
 			kind: 'conflict',
-			message: messages.classroomHasStudents,
+			message,
 			fieldErrors: {},
 		} as never)
 		const screen = await open()
@@ -539,7 +548,7 @@ describe('excluir turma', () => {
 
 		fireEvent.click(dialog.getByRole('button', { name: 'Excluir turma' }))
 
-		expect(await dialog.findByText(messages.classroomHasStudents)).toBeDefined()
+		expect(await dialog.findByText(message)).toBeDefined()
 		expect(
 			screen.getByRole('dialog', { name: 'Excluir Turma 1?' }),
 		).toBeDefined()

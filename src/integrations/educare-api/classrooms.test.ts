@@ -178,13 +178,38 @@ describe('deleteClassroom', () => {
 		})
 	})
 
-	it('converte o 409 na mensagem de turma com alunos', async () => {
+	it('converte o 409 na mensagem de turma com crianças', async () => {
 		const { api } = apiReturning(409, problem(409))
 		expect(await deleteClassroom(api as never, { id: ID })).toEqual({
 			ok: false,
 			kind: 'conflict',
-			message: messages.classroomHasStudents,
+			message:
+				'Esta turma tem crianças. Tire as crianças da turma antes de excluí-la.',
 			fieldErrors: {},
+		})
+	})
+
+	it('converte o 409 com "histórico" no detail na mensagem de histórico', async () => {
+		const { api } = apiReturning(
+			409,
+			problem(409, {
+				detail: 'A turma tem histórico de crianças e não pode ser excluída',
+			}),
+		)
+		expect(await deleteClassroom(api as never, { id: ID })).toEqual({
+			ok: false,
+			kind: 'conflict',
+			message:
+				'Esta turma já teve crianças e fica no histórico delas. Por isso, não pode ser excluída.',
+			fieldErrors: {},
+		})
+	})
+
+	it('trata o 409 sem detail como turma com crianças', async () => {
+		const { api } = apiReturning(409, { title: 'Conflito', status: 409 })
+		expect(await deleteClassroom(api as never, { id: ID })).toMatchObject({
+			ok: false,
+			message: messages.classroomHasStudents,
 		})
 	})
 

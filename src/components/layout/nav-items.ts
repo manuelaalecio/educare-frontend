@@ -1,10 +1,10 @@
 import {
+	Baby,
 	Contact,
 	House,
 	LayoutGrid,
 	type LucideIcon,
 	Settings,
-	Users,
 } from 'lucide-react'
 import { COORDINATOR_ROLE } from '#/integrations/educare-api/validation'
 import type { FileRouteTypes } from '#/routeTree.gen'
@@ -22,7 +22,7 @@ export type NavItem = {
 /** Itens do grupo "Menu" da barra lateral. */
 export const mainNav: NavItem[] = [
 	{ title: 'Início', to: '/', icon: House, exact: true },
-	{ title: 'Alunos', to: '/alunos', icon: Users },
+	{ title: 'Crianças', to: '/criancas', icon: Baby },
 	{ title: 'Responsáveis', to: '/responsaveis', icon: Contact },
 	{ title: 'Turmas', to: '/turmas', icon: LayoutGrid },
 ]

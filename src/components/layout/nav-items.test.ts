@@ -16,19 +16,19 @@ const byTitle = (title: string) => {
 describe('isActive', () => {
 	it('Início só no caminho exato', () => {
 		expect(isActive(byTitle('Início'), '/')).toBe(true)
-		expect(isActive(byTitle('Início'), '/alunos')).toBe(false)
+		expect(isActive(byTitle('Início'), '/criancas')).toBe(false)
 	})
 
 	it('os demais itens valem no caminho e abaixo dele', () => {
-		expect(isActive(byTitle('Alunos'), '/alunos')).toBe(true)
-		expect(isActive(byTitle('Alunos'), '/alunos/123')).toBe(true)
+		expect(isActive(byTitle('Crianças'), '/criancas')).toBe(true)
+		expect(isActive(byTitle('Crianças'), '/criancas/123')).toBe(true)
 		expect(isActive(byTitle('Configurações'), '/configuracoes/turmas')).toBe(
 			true,
 		)
 	})
 
 	it('não confunde caminhos com o mesmo prefixo', () => {
-		expect(isActive(byTitle('Alunos'), '/alunos-antigos')).toBe(false)
+		expect(isActive(byTitle('Crianças'), '/criancas-antigas')).toBe(false)
 	})
 })
 
@@ -54,8 +54,8 @@ describe('visibleItems', () => {
 describe('pageTitle', () => {
 	it.each([
 		['/', 'Início'],
-		['/alunos', 'Alunos'],
-		['/alunos/123', 'Alunos'],
+		['/criancas', 'Crianças'],
+		['/criancas/123', 'Crianças'],
 		['/responsaveis', 'Responsáveis'],
 		['/turmas', 'Turmas'],
 		['/configuracoes', 'Configurações'],

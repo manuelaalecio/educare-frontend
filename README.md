@@ -53,6 +53,27 @@ O front fala com a API do Educare ([`educare-backend`](https://github.com/manuel
 - `functions.ts`: as server functions (`login`, `logout`, `getCurrentUser`, `changeOwnPassword`). A lógica fica em `auth.ts`, testável sem o runtime do Start.
 - `middleware.ts`: o middleware `authenticated` das server functions que exigem sessão. Num `401` da API, ele apaga o cookie e manda para `/login`.
 
+### Consultas, gravações e cache
+
+As consultas ficam em `queries.ts` e usam as chaves da fábrica `keys`. Invalidar uma chave invalida também as que começam com ela: `keys.children` pega a lista (todas as páginas e filtros), os detalhes e o histórico de turmas de cada criança. Não escreva chaves soltas no componente; acrescente-as em `keys`.
+
+Uma gravação (`useMutation`) declara no `meta` as chaves que deixa velhas, e o `MutationCache` do `QueryClient` (em `src/integrations/tanstack-query/root-provider.tsx`) as invalida quando ela dá certo, sem esperar o refetch:
+
+```ts
+useMutation({
+	mutationFn: async (data) => {
+		const result = await createChild({ data })
+		if (!result.ok) throw new ApiFieldError(result)
+		return result.child
+	},
+	meta: { invalidates: [keys.children, keys.classrooms] },
+})
+```
+
+O `mutationFn` converte o `{ ok: false }` da server function num `ApiFieldError` (de `errors.ts`, com `kind`, `message` e `fieldErrors`). Assim, uma gravação que falha não invalida nada, e o formulário captura o erro e distribui os `fieldErrors` pelos campos. Componentes novos não chamam `invalidateQueries`; as telas de Turmas e Usuários ainda invalidam à mão, até serem migradas.
+
+Uma rota que carrega dados no `loader` (no SSR e no preload) usa `loadQuery(queryClient, options)`. Sem dados em cache, ou com a consulta invalidada por uma gravação, ele espera a busca, e a página já aparece com os dados novos. Com dados, devolve na hora, e o `useQuery` do componente atualiza em segundo plano. Um erro da busca não é lançado: a consulta fica em erro, e o componente mostra a mensagem com "Tentar de novo". Só o redirecionamento de sessão expirada e o `notFound()` seguem para o router.
+
 ### `EDUCARE_API_URL`
 
 URL da API, lida só no servidor. Em desenvolvimento, `http://localhost:8080` (o valor do `.env.example`). Em produção, precisa ser `https://`: o servidor não sobe com `http`, com a variável vazia ou sem ela.

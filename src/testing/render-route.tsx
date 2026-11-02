@@ -1,4 +1,4 @@
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { type QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import {
 	type AnyRoute,
 	createMemoryHistory,
@@ -9,6 +9,8 @@ import {
 	RouterProvider,
 } from '@tanstack/react-router'
 import { render, screen } from '@testing-library/react'
+import { NotFound } from '#/components/layout/not-found'
+import { createQueryClient } from '#/integrations/tanstack-query/root-provider'
 
 type Context = { queryClient: QueryClient }
 
@@ -21,9 +23,10 @@ export async function renderRoutes(
 	url: string,
 	routes: (root: AnyRoute) => AnyRoute[],
 ) {
-	const queryClient = new QueryClient({
-		defaultOptions: { queries: { retry: false } },
-	})
+	// O mesmo `QueryClient` do app (com o `MutationCache` que invalida
+	// `meta.invalidates`), sem novas tentativas para os erros aparecerem na hora.
+	const queryClient = createQueryClient()
+	queryClient.setDefaultOptions({ queries: { retry: false } })
 	const root = createRootRouteWithContext<Context>()({
 		component: Outlet,
 	})
@@ -33,7 +36,7 @@ export async function renderRoutes(
 		['/', 'Página inicial'],
 		['/login', 'Página de login'],
 		['/minha-conta', 'Página Minha conta'],
-		['/alunos', 'Página de alunos'],
+		['/criancas', 'Página de crianças'],
 		['/responsaveis', 'Página de responsáveis'],
 		['/turmas', 'Página de turmas'],
 		['/configuracoes', 'Página de configurações'],
@@ -53,6 +56,7 @@ export async function renderRoutes(
 		routeTree: root.addChildren([...tested, ...placeholders]),
 		history: createMemoryHistory({ initialEntries: [url] }),
 		context: { queryClient },
+		defaultNotFoundComponent: NotFound,
 	})
 	render(
 		<QueryClientProvider client={queryClient}>

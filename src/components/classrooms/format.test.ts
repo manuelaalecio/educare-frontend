@@ -20,20 +20,20 @@ describe('studentSummary', () => {
 	it('usa o plural', () => {
 		expect(
 			studentSummary({ studentCount: 38, maleCount: 20, femaleCount: 18 }),
-		).toBe('38 alunos · 20 meninos e 18 meninas')
+		).toBe('38 crianças · 20 meninos e 18 meninas')
 	})
 
 	it('usa o singular quando o número é 1', () => {
 		expect(
 			studentSummary({ studentCount: 1, maleCount: 1, femaleCount: 0 }),
-		).toBe('1 aluno · 1 menino e 0 meninas')
+		).toBe('1 criança · 1 menino e 0 meninas')
 	})
 })
 
 describe('studentsInClassroom', () => {
 	it('concorda com o número', () => {
-		expect(studentsInClassroom(1)).toBe('1 aluno nesta turma')
-		expect(studentsInClassroom(38)).toBe('38 alunos nesta turma')
+		expect(studentsInClassroom(1)).toBe('1 criança nesta turma')
+		expect(studentsInClassroom(38)).toBe('38 crianças nesta turma')
 	})
 })
 

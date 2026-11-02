@@ -50,6 +50,54 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/children": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["list_2"];
+        put?: never;
+        post: operations["create_2"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/children/{id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["findById_2"];
+        put: operations["update_1"];
+        post?: never;
+        delete: operations["delete_2"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/children/{id}/classrooms": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get: operations["history"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/classrooms": {
         parameters: {
             query?: never;
@@ -147,6 +195,91 @@ export interface components {
         ChangePasswordRequest: {
             password: string;
         };
+        ChildClassroomResponse: {
+            /** Format: uuid */
+            classroomId: string;
+            classroomName: string;
+            /** Format: date */
+            endDate?: string;
+            /** Format: date */
+            startDate: string;
+        };
+        ChildRequest: {
+            address: string;
+            addressComplement?: string;
+            addressNumber: string;
+            birthCertificateNumber?: string;
+            /** Format: date */
+            birthDate: string;
+            birthplace?: string;
+            cep: string;
+            church?: string;
+            city: string;
+            /** Format: uuid */
+            classroomId: string;
+            cpf?: string;
+            gender?: string;
+            healthReport?: string;
+            maritalStatus?: string;
+            medicalObservation?: string;
+            medication?: string;
+            name: string;
+            nationality?: string;
+            neighborhood: string;
+            race?: string;
+            religion?: string;
+            rg?: string;
+            state: string;
+        };
+        ChildResponse: {
+            address: string;
+            addressComplement?: string;
+            addressNumber: string;
+            birthCertificateNumber?: string;
+            /** Format: date */
+            birthDate: string;
+            birthplace?: string;
+            cep: string;
+            church?: string;
+            city: string;
+            classroom: components["schemas"]["ClassroomRefResponse"];
+            cpf?: string;
+            /** Format: date-time */
+            createdAt: string;
+            gender?: string;
+            healthReport?: string;
+            /** Format: uuid */
+            id: string;
+            maritalStatus?: string;
+            medicalObservation?: string;
+            medication?: string;
+            name: string;
+            nationality?: string;
+            neighborhood: string;
+            race?: string;
+            religion?: string;
+            rg?: string;
+            state: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ChildSummaryResponse: {
+            /** Format: date */
+            birthDate: string;
+            classroom: components["schemas"]["ClassroomRefResponse"];
+            /** Format: date-time */
+            createdAt: string;
+            /** Format: uuid */
+            id: string;
+            name: string;
+            /** Format: date-time */
+            updatedAt: string;
+        };
+        ClassroomRefResponse: {
+            /** Format: uuid */
+            id: string;
+            name: string;
+        };
         ClassroomResponse: {
             /** Format: date-time */
             createdAt: string;
@@ -207,6 +340,10 @@ export interface components {
             /** Format: int32 */
             size?: number;
             sort?: string[];
+        };
+        PagedModelChildSummaryResponse: {
+            content: components["schemas"]["ChildSummaryResponse"][];
+            page: components["schemas"]["PageMetadata"];
         };
         PagedModelUserResponse: {
             content: components["schemas"]["UserResponse"][];
@@ -374,6 +511,317 @@ export interface operations {
             };
         };
     };
+    list_2: {
+        parameters: {
+            query: {
+                name?: string;
+                classroomId?: string;
+                pageable: components["schemas"]["Pageable"];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["PagedModelChildSummaryResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    create_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChildRequest"];
+            };
+        };
+        responses: {
+            /** @description Created */
+            201: {
+                headers: {
+                    /** @description Path of the created child */
+                    Location?: string;
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChildResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    findById_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChildResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    update_1: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ChildRequest"];
+            };
+        };
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChildResponse"];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Conflict */
+            409: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    delete_2: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description No Content */
+            204: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content?: never;
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Forbidden */
+            403: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
+    history: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description OK */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ChildClassroomResponse"][];
+                };
+            };
+            /** @description Bad Request */
+            400: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Unauthorized */
+            401: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+            /** @description Not Found */
+            404: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/problem+json": components["schemas"]["ProblemDetail"];
+                };
+            };
+        };
+    };
     list_1: {
         parameters: {
             query?: never;
@@ -394,15 +842,6 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetail"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
                 headers: {
                     [name: string]: unknown;
                 };
@@ -505,15 +944,6 @@ export interface operations {
             };
             /** @description Unauthorized */
             401: {
-                headers: {
-                    [name: string]: unknown;
-                };
-                content: {
-                    "application/problem+json": components["schemas"]["ProblemDetail"];
-                };
-            };
-            /** @description Forbidden */
-            403: {
                 headers: {
                     [name: string]: unknown;
                 };
