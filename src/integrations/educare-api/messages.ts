@@ -12,7 +12,9 @@ export const messages = {
 	conflict: 'Já existe um registro com esses dados.',
 	classroomNameTaken: 'Já existe uma turma com esse nome.',
 	classroomHasStudents:
-		'Esta turma tem alunos. Tire os alunos da turma antes de excluí-la.',
+		'Esta turma tem crianças. Tire as crianças da turma antes de excluí-la.',
+	classroomHasHistory:
+		'Esta turma já teve crianças e fica no histórico delas. Por isso, não pode ser excluída.',
 	classroomNotFound: 'Essa turma não existe mais. A lista foi atualizada.',
 	classroomCreated: 'Turma criada.',
 	classroomRenamed: 'Turma renomeada.',
@@ -25,4 +27,11 @@ export const messages = {
 	userEmailTaken: 'Já existe um usuário com esse email.',
 	lastCoordinator: 'O sistema precisa ter ao menos um(a) coordenador(a).',
 	userNotFound: 'Esse usuário não existe mais. A lista foi atualizada.',
+	childCreated: 'Criança cadastrada.',
+	childUpdated: 'Dados da criança salvos.',
+	childDeleted: 'Criança excluída.',
+	childNotFound: 'Essa criança não existe mais.',
+	childCpfTaken: 'Já existe uma criança com este CPF.',
+	childRgTaken: 'Já existe uma criança com este RG.',
+	childCertificateTaken: 'Já existe uma criança com esta matrícula.',
 } as const

@@ -68,7 +68,10 @@ export function LoginForm({ onSubmit, notice }: LoginFormProps) {
 			</CardHeader>
 			<CardContent>
 				{/* noValidate: a validação é a do loginSchema, não a do navegador. */}
+				{/* `post`: se a usuária enviar antes da hidratação, o envio nativo
+				    não põe a senha na URL. */}
 				<form
+					method='post'
 					noValidate
 					className='flex flex-col gap-4'
 					onSubmit={(event) => {

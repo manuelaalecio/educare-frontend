@@ -12,18 +12,18 @@ export function classroomCountLabel(count: number) {
 
 type Counts = { studentCount: number; maleCount: number; femaleCount: number }
 
-/** "38 alunos · 20 meninos e 18 meninas", com singular quando for 1. */
+/** "38 crianças · 20 meninos e 18 meninas", com singular quando for 1. */
 export function studentSummary({
 	studentCount,
 	maleCount,
 	femaleCount,
 }: Counts) {
-	return `${plural(studentCount, 'aluno', 'alunos')} · ${plural(maleCount, 'menino', 'meninos')} e ${plural(femaleCount, 'menina', 'meninas')}`
+	return `${plural(studentCount, 'criança', 'crianças')} · ${plural(maleCount, 'menino', 'meninos')} e ${plural(femaleCount, 'menina', 'meninas')}`
 }
 
-/** "38 alunos nesta turma", no modal de edição. */
+/** "38 crianças nesta turma", no modal de edição. */
 export function studentsInClassroom(count: number) {
-	return `${plural(count, 'aluno', 'alunos')} nesta turma`
+	return `${plural(count, 'criança', 'crianças')} nesta turma`
 }
 
 /** Placeholder do modal "Nova turma": a próxima turma da sequência. */

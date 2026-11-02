@@ -7,6 +7,7 @@ import {
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
 import type { ReactNode } from 'react'
+import { isNotFound, NOT_FOUND_TITLE } from '#/components/layout/not-found'
 import { themeScript } from '#/components/theme/theme-script'
 import { Toaster } from '#/components/ui/sonner'
 import TanStackQueryDevtools from '../integrations/tanstack-query/devtools'
@@ -17,7 +18,7 @@ interface MyRouterContext {
 }
 
 export const Route = createRootRouteWithContext<MyRouterContext>()({
-	head: () => ({
+	head: ({ matches }) => ({
 		meta: [
 			{
 				charSet: 'utf-8',
@@ -27,7 +28,7 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 				content: 'width=device-width, initial-scale=1',
 			},
 			{
-				title: 'Educare',
+				title: isNotFound(matches) ? NOT_FOUND_TITLE : 'Educare',
 			},
 		],
 		links: [

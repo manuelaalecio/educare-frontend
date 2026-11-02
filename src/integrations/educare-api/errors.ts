@@ -152,3 +152,21 @@ export function toFormError(error: unknown): FormError {
 		fieldErrors: apiError.fieldErrors,
 	}
 }
+
+/**
+ * Erro lançado pelo `mutationFn` quando a server function devolve
+ * `{ ok: false }`. Como a mutation falha, o `MutationCache` não invalida
+ * nada; o formulário distribui `fieldErrors` pelos campos e mostra `message`.
+ */
+export class ApiFieldError extends Error {
+	readonly kind: ApiErrorKind
+	readonly fieldErrors: Record<string, string>
+
+	constructor(error: FormError) {
+		// Sem mensagem geral (os erros já estão nos campos), `message` fica vazia.
+		super(error.message ?? '')
+		this.name = 'ApiFieldError'
+		this.kind = error.kind
+		this.fieldErrors = error.fieldErrors
+	}
+}

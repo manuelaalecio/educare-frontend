@@ -28,7 +28,9 @@ export function ClassroomTable({ classrooms, onEdit, onDelete }: Props) {
 				<TableHeader className='bg-muted/50'>
 					<TableRow className='hover:bg-transparent'>
 						<TableHead className={`${head} pl-6`}>Nome</TableHead>
-						<TableHead className={`${head} w-24 text-right`}>Alunos</TableHead>
+						<TableHead className={`${head} w-24 text-right`}>
+							Crianças
+						</TableHead>
 						<TableHead className={`${head} w-24 text-right`}>Meninos</TableHead>
 						<TableHead className={`${head} w-24 text-right`}>Meninas</TableHead>
 						<TableHead className={`${head} w-32 pl-6`}>Criada em</TableHead>

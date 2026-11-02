@@ -264,7 +264,7 @@ function DialogBody({
 			<>
 				<Header
 					title='Editar turma'
-					description='Mudar o nome não tira nenhum aluno da turma.'
+					description='Mudar o nome não tira nenhuma criança da turma.'
 				/>
 				<ClassroomForm
 					mode='edit'
@@ -282,7 +282,7 @@ function DialogBody({
 		<>
 			<Header
 				title={`Excluir ${classroom.name}?`}
-				description='A turma sai da lista e dos gráficos do Início. Só dá para excluir turmas sem alunos.'
+				description='A turma sai da lista e dos gráficos do Início. Só dá para excluir turmas sem crianças.'
 			/>
 			<DeleteClassroomConfirm
 				cancelRef={cancelRef}

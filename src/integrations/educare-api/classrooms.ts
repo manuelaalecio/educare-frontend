@@ -108,6 +108,18 @@ export async function deleteClassroom(
 		)
 		return { ok: true }
 	} catch (error) {
-		return failure(error, { message: messages.classroomHasStudents })
+		return failure(error, { message: deleteConflictMessage(error) })
 	}
+}
+
+/**
+ * O back não diferencia os `409` da exclusão por código: o `detail` com
+ * "histórico" é a turma que já teve crianças; qualquer outro é a turma que
+ * tem crianças agora.
+ */
+function deleteConflictMessage(error: unknown) {
+	const detail = error instanceof ApiError ? (error.detail ?? '') : ''
+	return /histórico/i.test(detail)
+		? messages.classroomHasHistory
+		: messages.classroomHasStudents
 }

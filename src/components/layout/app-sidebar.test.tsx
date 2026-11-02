@@ -55,7 +55,8 @@ function openWith(user: CurrentUser, url: string) {
 			layout.addChildren([
 				page('/', 'Página inicial'),
 				page('/turmas', 'Página de turmas'),
-				page('/alunos/$id', 'Página de um aluno'),
+				page('/criancas/$id', 'Página de uma criança'),
+				page('/criancas-antigas', 'Página parecida'),
 				page('/minha-conta', 'Página Minha conta'),
 			]),
 		]
@@ -99,7 +100,7 @@ describe('AppSidebar', () => {
 		].map((el) => el.getAttribute('aria-label'))
 		expect(names).toEqual([
 			'Início',
-			'Alunos',
+			'Crianças',
 			'Responsáveis',
 			'Turmas',
 			'Configurações',
@@ -151,15 +152,35 @@ describe('AppSidebar', () => {
 		).toBe('true')
 	})
 
-	it('marca só Alunos numa subpágina de alunos', async () => {
-		const { screen } = await openWith(ana, '/alunos/123')
+	it('marca só Crianças numa subpágina de crianças', async () => {
+		const { screen } = await openWith(ana, '/criancas/123')
 		const nav = await sidebarOf(screen)
 		const current = nav
 			.getAllByRole('link')
 			.filter((link) => link.getAttribute('aria-current') === 'page')
 		expect(current.map((link) => link.getAttribute('aria-label'))).toEqual([
-			'Alunos',
+			'Crianças',
 		])
+	})
+
+	it('não marca Crianças num caminho só parecido', async () => {
+		const { screen } = await openWith(ana, '/criancas-antigas')
+		expect(await screen.findByText('Página parecida')).toBeDefined()
+		const nav = await sidebarOf(screen)
+		expect(
+			nav
+				.getAllByRole('link')
+				.some((link) => link.getAttribute('aria-current') === 'page'),
+		).toBe(false)
+	})
+
+	it('vai a Crianças ao clicar no item', async () => {
+		const { screen, router } = await openWith(ana, '/')
+		const nav = await sidebarOf(screen)
+		fireEvent.click(nav.getByRole('link', { name: 'Crianças' }))
+
+		expect(await screen.findByText('Página de crianças')).toBeDefined()
+		expect(router.state.location.pathname).toBe('/criancas')
 	})
 
 	it('não marca nenhum item numa página fora da barra', async () => {
