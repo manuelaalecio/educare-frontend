@@ -11,7 +11,7 @@ O cadastro das crianças atendidas é o centro do Educare (responsáveis, matrí
   - Configurações › Turmas: coluna "Crianças", resumo "N crianças · X meninos e Y meninas", "N crianças nesta turma" e os textos dos modais;
   - mensagem do `409` ao excluir turma com crianças e nova mensagem para turma que só tem histórico de crianças.
 - **Listagem** em `/criancas` ([subtarefa](https://app.clickup.com/t/1dfh60ph1z4)): busca por nome e filtro por turma refletidos na URL (`?nome=&turma=&pagina=`), tabela no desktop e cartões no celular, 20 por página, "Atualizado há X min" com "Atualizar", estados de carregando, vazio, vazio com filtro e erro. A única ação da lista é abrir os detalhes.
-- **Cadastro e edição** em `/criancas/nova` e `/criancas/$childId/editar` ([subtarefa](https://app.clickup.com/t/1dfh60ph1z5)): formulário em seções (Turma, Dados pessoais, Documentos com a certidão de nascimento no modelo novo ou antigo, Endereço, Religião, Saúde), máscaras, validação antes do envio, erros `400`/`409` nos campos, aviso de troca de turma e confirmação ao sair com alterações não salvas.
+- **Cadastro e edição** em `/criancas/nova` e `/criancas/$childId/editar` ([subtarefa](https://app.clickup.com/t/1dfh60ph1z5)): formulário em seções (Turma, Dados pessoais, Documentos com a matrícula da certidão de nascimento, Endereço, Religião, Saúde), máscaras, validação antes do envio, erros `400`/`409` nos campos, aviso de troca de turma e confirmação ao sair com alterações não salvas.
 - **Detalhes e exclusão** em `/criancas/$childId` ([subtarefa](https://app.clickup.com/t/1dfh60ph1z6)): todos os dados em cartões, CPF, RG e matrícula mascarados com "Mostrar", histórico de turmas, "Editar" para todos e "Excluir" (com modal de confirmação) só para `COORDENADOR`; 404 com "Criança não encontrada".
 - **Padrão novo de dados**, mínimo para as telas de crianças: fábrica de chaves `keys` (com `keys.children` como raiz), `MutationCache` global que invalida as chaves declaradas em `mutation.meta.invalidates` só no sucesso, `ApiFieldError` lançado pela mutation, consultas com `staleTime` e carregamento no `loader` da rota (SSR). Cadastrar, editar ou excluir atualiza a lista, os detalhes e as contagens das turmas sem F5.
 - Regenerar `schema.gen.ts` com o contrato novo de `/api/v1/children` e `/api/v1/children/{id}/classrooms`.
@@ -21,6 +21,7 @@ O cadastro das crianças atendidas é o centro do Educare (responsáveis, matrí
 - Qualquer mudança no back (API de crianças, vínculo com turma, certidão, contagens reais): ficam nas subtarefas [Back] da tarefa.
 - Migrar Configurações › Turmas e Usuários para `useMutation` com `meta.invalidates`, e o "Atualizado há X min" nessas listas: ficam na tarefa [Cache de consultas com invalidação por chave](https://app.clickup.com/t/1dfh60ph1zz). Esta change só cria a base que ela vai reaproveitar.
 - Responsáveis, matrícula/rematrícula, arquivo ou foto da certidão e demais anexos.
+- Certidão no modelo antigo (cartório, livro, folha e termo) e conferência da veracidade da matrícula (dígitos verificadores, tipo de livro, ano do registro): só a matrícula de 32 números é guardada, como no back.
 - Escolher a data da troca de turma (é sempre hoje, no servidor), busca de CEP, validação do RG por estado.
 - Renomear identificadores no código e no contrato (`studentCount`, `studentSummary`, `classroomHasStudents`...).
 - Editar ou excluir a partir da lista, exportar, ordenar por coluna, filtros além de nome e turma, ficha em PDF.
@@ -30,7 +31,7 @@ O cadastro das crianças atendidas é o centro do Educare (responsáveis, matrí
 ## Capabilities
 
 ### New Capabilities
-- `children`: páginas de crianças — listagem com busca e filtro por turma, cadastro, edição com troca de turma, detalhes com histórico de turmas e exclusão, incluindo a certidão de nascimento nos dois modelos, as regras de permissão e a atualização dos dados sem F5.
+- `children`: páginas de crianças — listagem com busca e filtro por turma, cadastro, edição com troca de turma, detalhes com histórico de turmas e exclusão, incluindo a matrícula da certidão de nascimento, as regras de permissão e a atualização dos dados sem F5.
 
 ### Modified Capabilities
 - `app-layout`: o item "Alunos" (`/alunos`) da barra lateral, do cabeçalho e da gaveta do celular vira "Crianças" (`/criancas`); `/alunos` sai das páginas provisórias.
@@ -40,7 +41,7 @@ O cadastro das crianças atendidas é o centro do Educare (responsáveis, matrí
 
 - **Ordem e sobreposição com outras changes**:
   - não há outra change em andamento no front (`openspec/changes/` só tem `archive/`);
-  - depende das subtarefas [Back] "API de crianças" (change `add-child-crud` no `educare-backend`, ainda sem o vínculo e a certidão) e "Vínculo obrigatório criança–turma com histórico". O contrato com `classroomId`, `classroom`, a certidão e `/children/{id}/classrooms` precisa estar publicado antes das tarefas de integração; a troca "Alunos" → "Crianças" e a base de cache não dependem dele e podem ser feitas antes;
+  - depende das subtarefas [Back] "API de crianças" (change `add-child-crud` no `educare-backend`) e "Vínculo obrigatório criança–turma com histórico" (change `link-child-to-classroom`), as duas já implementadas na `dev` do back, com o contrato de `classroomId`, `classroom`, a certidão e `/children/{id}/classrooms`; a troca "Alunos" → "Crianças" e a base de cache não dependem dele e podem ser feitas antes;
   - sobrepõe-se à tarefa [Cache de consultas com invalidação por chave](https://app.clickup.com/t/1dfh60ph1zz): esta change cria `keys`, o `MutationCache` e o `ApiFieldError`; a change daquela tarefa, quando vier, migra Turmas e Usuários para eles em vez de recriá-los.
 - **Código**:
   - `src/integrations/educare-api/`: `queries.ts` (fábrica `keys`, consultas de crianças, `staleTime` das turmas), `children.ts` (novo), `functions.ts`, `validation.ts`, `messages.ts`, `errors.ts` (`ApiFieldError`), `classrooms.ts` (409 com histórico), `schema.gen.ts` (regenerado);

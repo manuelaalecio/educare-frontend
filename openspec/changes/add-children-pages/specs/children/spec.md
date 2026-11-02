@@ -18,8 +18,8 @@ A idade SHALL ser contada em anos completos na data de hoje no fuso de São Paul
 A página SHALL funcionar e manter contraste de pelo menos 4,5:1 nos textos nos modos claro e escuro.
 
 #### Scenario: Lista no desktop
-- **WHEN** uma `EDUCADOR` abre `/criancas` numa tela de 1440 px em 01/11/2026, e a API devolve "Ana Lima", nascida em 10/03/2022, na "Turma 1", e "Bruno Reis", nascido em 01/02/2026, na "Turma 2"
-- **THEN** a tabela "Crianças" mostra "Ana Lima" com "4 anos", "10/03/2022" e "Turma 1", depois "Bruno Reis" com "8 meses", "01/02/2026" e "Turma 2", e o subtítulo é "2 crianças cadastradas"
+- **WHEN** uma `EDUCADOR` abre `/criancas` numa tela de 1440 px em 01/11/2026, e a API devolve "Ana Lima", nascida em 10/03/2022, na "Turma 1", e "Bruno Reis", nascido em 10/02/2026, na "Turma 2"
+- **THEN** a tabela "Crianças" mostra "Ana Lima" com "4 anos", "10/03/2022" e "Turma 1", depois "Bruno Reis" com "8 meses", "10/02/2026" e "Turma 2", e o subtítulo é "2 crianças cadastradas"
 
 #### Scenario: Só "Ver detalhes" na lista
 - **WHEN** um `COORDENADOR` abre `/criancas` numa tela de 1440 px
@@ -93,14 +93,14 @@ As páginas protegidas `/criancas/nova` (título de nível 1 "Nova criança", t�
 
 - "Turma": "Turma" (seletor com as turmas em ordem alfabética);
 - "Dados pessoais": "Nome completo", "Data de nascimento", "Naturalidade", "Nacionalidade", "Gênero" ("Feminino", "Masculino", "Outro"), "Raça/cor" ("Branca", "Preta", "Parda", "Amarela", "Indígena") e "Estado civil" ("Solteiro(a)", "Casado(a)", "União estável", "Divorciado(a)", "Viúvo(a)");
-- "Documentos": "CPF", "RG" e "Certidão de nascimento" (ver "Certidão de nascimento no formulário");
+- "Documentos": "CPF", "RG" e "Matrícula da certidão" (ver "Certidão de nascimento no formulário");
 - "Endereço": "CEP", "Endereço", "Número", "Complemento", "Bairro", "Cidade" e "UF" (seletor com as 27 siglas);
 - "Religião": "Religião" e "Igreja";
 - "Saúde": "Laudo", "Medicação" e "Observação médica", em campos de várias linhas.
 
 Os obrigatórios ("Turma", "Nome completo", "Data de nascimento", "CEP", "Endereço", "Número", "Bairro", "Cidade" e "UF") SHALL ter "*" no rótulo. Os seletores opcionais SHALL ter a opção "Não informar". "CPF" SHALL usar a máscara `000.000.000-00` e "CEP" a máscara `00000-000`. Todo campo SHALL ter rótulo visível e, enquanto houver erro, `aria-invalid` e a mensagem ligada por `aria-describedby`. Os botões SHALL ser "Cancelar" e "Cadastrar criança" (cadastro) ou "Salvar alterações" (edição), com alvo de toque de pelo menos 44 px. "Cancelar" SHALL levar à lista (cadastro) ou aos detalhes (edição).
 
-Na edição, o formulário SHALL abrir preenchido com os dados atuais da criança, inclusive a turma atual e a certidão.
+Na edição, o formulário SHALL abrir preenchido com os dados atuais da criança, inclusive a turma atual e a matrícula da certidão.
 
 #### Scenario: Abrir o cadastro
 - **WHEN** a usuária clica em "Nova criança" na lista
@@ -139,34 +139,22 @@ O CPF e o CEP SHALL ser enviados só com os números.
 - **THEN** a API recebe o nome "Ana Lima", o CPF "52998224725", o CEP "01310100" e nenhum complemento
 
 ### Requirement: Certidão de nascimento no formulário
-Na seção "Documentos", o seletor "Certidão de nascimento" SHALL ter as opções "Não informar" (padrão), "Modelo novo (matrícula)" e "Modelo antigo (livro, folha e termo)".
-
-- Com "Modelo novo (matrícula)", SHALL aparecer o campo "Matrícula", obrigatório, com a máscara `000000 00 00 0000 0 00000 000 0000000 00` e a dica "32 números, no alto da certidão". A matrícula SHALL ter 32 números ("A matrícula tem 32 números."); os dois dígitos verificadores SHALL conferir, o 15º número (tipo de livro) SHALL ser 1 (livro de nascimento) e o ano do registro (do 11º ao 14º número) SHALL estar entre o ano de nascimento e o ano atual; senão, "Matrícula inválida. Confira os números.". Vazia: "Informe a matrícula.". A matrícula SHALL ser enviada só com os números.
-- Com "Modelo antigo (livro, folha e termo)", SHALL aparecer os campos "Cartório", "Livro", "Folha" e "Termo", todos obrigatórios ("Informe o cartório.", "Informe o livro.", "Informe a folha.", "Informe o termo."), com no máximo 200 caracteres no cartório e 20 em livro, folha e termo. A cidade do cartório faz parte do nome do cartório.
-- Trocar de modelo SHALL limpar os campos do outro modelo e os erros deles; "Não informar" SHALL esconder e limpar todos. Só os campos do modelo escolhido SHALL ser enviados; com "Não informar", nenhum dado de certidão SHALL ser enviado.
+Na seção "Documentos", a certidão de nascimento SHALL ser informada só pela matrícula, no campo opcional "Matrícula da certidão", com a máscara `000000 00 00 0000 0 00000 000 0000000 00` e a dica "32 números, no alto da certidão". Não há escolha de modelo de certidão: só o modelo com matrícula é aceito. Preenchida, a matrícula SHALL ter exatamente 32 números ("A matrícula tem 32 números."); o formulário SHALL NOT conferir dígitos verificadores, tipo de livro nem ano do registro. A matrícula SHALL ser enviada só com os números; vazia, nenhum dado de certidão SHALL ser enviado.
 
 #### Scenario: Matrícula curta
-- **WHEN** a usuária escolhe "Modelo novo (matrícula)", digita 31 números e envia
-- **THEN** "A matrícula tem 32 números." aparece junto ao campo "Matrícula", e nada é enviado
+- **WHEN** a usuária digita 31 números em "Matrícula da certidão" e envia
+- **THEN** "A matrícula tem 32 números." aparece junto ao campo "Matrícula da certidão", e nada é enviado
 
-#### Scenario: Dígito verificador errado
-- **WHEN** a usuária digita uma matrícula de 32 números com o último número trocado e envia
-- **THEN** "Matrícula inválida. Confira os números." aparece junto ao campo, e nada é enviado
+#### Scenario: Matrícula com 32 números
+- **WHEN** a usuária digita os 32 números `10453901552013100012021000012321` (exibidos com a máscara), preenche os obrigatórios e envia
+- **THEN** a API recebe `birthCertificateNumber` com os 32 números, sem pontuação nem espaços, sem conferência de dígitos verificadores
 
-#### Scenario: Matrícula válida
-- **WHEN** a usuária digita uma matrícula válida, preenche os obrigatórios e envia
-- **THEN** a API recebe a certidão no modelo novo com os 32 números, sem pontuação nem espaços, e sem cartório, livro, folha e termo
-
-#### Scenario: Modelo antigo incompleto
-- **WHEN** a usuária escolhe "Modelo antigo (livro, folha e termo)", preenche cartório, livro e folha, deixa "Termo" em branco e envia
-- **THEN** "Informe o termo." aparece junto ao campo "Termo", e nada é enviado
-
-#### Scenario: Trocar de modelo
-- **WHEN** a usuária digita uma matrícula, troca para "Modelo antigo (livro, folha e termo)" e depois para "Não informar", e envia o formulário com os obrigatórios
-- **THEN** a matrícula some ao trocar de modelo, os campos do modelo antigo somem ao escolher "Não informar", e a API não recebe nenhum dado de certidão
+#### Scenario: Matrícula em branco
+- **WHEN** a usuária deixa "Matrícula da certidão" vazia, preenche os obrigatórios e envia
+- **THEN** a API não recebe nenhum dado de certidão
 
 ### Requirement: Erros da API no formulário de criança
-Se a API responder `400` com `errors`, cada mensagem SHALL aparecer junto ao campo correspondente (por exemplo, "Turma não encontrada" em "Turma"), e o formulário SHALL manter o que foi digitado. Se a API responder `409` por documento já usado por outra criança, o campo SHALL mostrar "Já existe uma criança com este CPF.", "Já existe uma criança com este RG." ou "Já existe uma criança com esta certidão." (na "Matrícula" ou no "Termo", conforme o modelo), sem repetir o número. Outros erros (`403`, `5xx`, falha de rede, `400` sem erro de campo) SHALL aparecer num alerta no topo do formulário, com a mensagem da integração com a API. Ao editar um campo, o erro vindo da API para ele SHALL sumir. Durante o envio, o botão de enviar SHALL ficar desabilitado. Uma gravação que falha SHALL NOT atualizar nenhuma lista nem contagem. Um `401` SHALL seguir o fluxo de sessão expirada.
+Se a API responder `400` com `errors`, cada mensagem SHALL aparecer junto ao campo correspondente (por exemplo, "Turma não encontrada" em "Turma"), e o formulário SHALL manter o que foi digitado. Se a API responder `409` por documento já usado por outra criança, o campo SHALL mostrar "Já existe uma criança com este CPF.", "Já existe uma criança com este RG." ou "Já existe uma criança com esta matrícula." (no campo "Matrícula da certidão"), sem repetir o número. Outros erros (`403`, `5xx`, falha de rede, `400` sem erro de campo) SHALL aparecer num alerta no topo do formulário, com a mensagem da integração com a API. Ao editar um campo, o erro vindo da API para ele SHALL sumir. Durante o envio, o botão de enviar SHALL ficar desabilitado. Uma gravação que falha SHALL NOT atualizar nenhuma lista nem contagem. Um `401` SHALL seguir o fluxo de sessão expirada.
 
 #### Scenario: CPF já usado
 - **WHEN** a usuária envia um CPF que outra criança já tem, e a API responde `409`
@@ -245,11 +233,7 @@ A página protegida `/criancas/<id>` SHALL ter o título de aba "Criança · Edu
 - **THEN** o formulário abre preenchido sem nova chamada à API para buscar a criança
 
 ### Requirement: Documentos mascarados nos detalhes
-No cartão "Documentos", o CPF SHALL aparecer mascarado, só com os 3 primeiros e os 2 últimos números ("529.***.***-25"), e o RG só com os 2 últimos caracteres ("******8X"), cada um com o botão "Mostrar" (nome acessível "Mostrar CPF", "Mostrar RG"), que mostra o valor completo e passa a "Ocultar". A certidão de nascimento SHALL aparecer como:
-
-- modelo novo: "Modelo novo" e a matrícula com os 15 primeiros e os 2 últimos números visíveis e o resto com "•" ("104539 01 55 2022 1 ••••• ••• ••••••• 72"), com o botão "Mostrar" (nome acessível "Mostrar matrícula");
-- modelo antigo: "Modelo antigo" e "Cartório <cartório> · Livro <livro> · Folha <folha> · Termo <termo>";
-- sem certidão: "Não informado".
+No cartão "Documentos", o CPF SHALL aparecer mascarado, só com os 3 primeiros e os 2 últimos números ("529.***.***-25"), e o RG só com os 2 últimos caracteres ("******8X"), cada um com o botão "Mostrar" (nome acessível "Mostrar CPF", "Mostrar RG"), que mostra o valor completo e passa a "Ocultar". A matrícula da certidão de nascimento SHALL aparecer com os 15 primeiros e os 2 últimos números visíveis e o resto com "•" ("104539 01 55 2022 1 ••••• ••• ••••••• 72"), com o botão "Mostrar" (nome acessível "Mostrar matrícula"); sem matrícula, "Não informado".
 
 Mostrar ou ocultar SHALL NOT fazer nova chamada à API. Ao sair da página, os documentos SHALL voltar a aparecer mascarados.
 
@@ -257,13 +241,9 @@ Mostrar ou ocultar SHALL NOT fazer nova chamada à API. Ao sair da página, os d
 - **WHEN** a usuária abre os detalhes de uma criança com o CPF `52998224725`
 - **THEN** o cartão mostra "529.***.***-25"; ao clicar em "Mostrar CPF", mostra "529.982.247-25" e o botão passa a "Ocultar", sem nova chamada à API
 
-#### Scenario: Certidão no modelo novo
+#### Scenario: Matrícula mascarada
 - **WHEN** a criança tem a matrícula `10453901552022100012345612345672`
-- **THEN** o cartão mostra "Modelo novo" e "104539 01 55 2022 1 ••••• ••• ••••••• 72", com o botão "Mostrar matrícula"
-
-#### Scenario: Certidão no modelo antigo
-- **WHEN** a criança tem a certidão no modelo antigo, do "Cartório do 1º Ofício de Campinas", livro "A-12", folha "34" e termo "5678"
-- **THEN** o cartão mostra "Modelo antigo" e "Cartório do 1º Ofício de Campinas · Livro A-12 · Folha 34 · Termo 5678"
+- **THEN** o cartão mostra "104539 01 55 2022 1 ••••• ••• ••••••• 72", com o botão "Mostrar matrícula"; ao clicar, mostra "104539 01 55 2022 1 00012 345 6123456 72", sem nova chamada à API
 
 ### Requirement: Histórico de turmas
 O cartão "Histórico de turmas" SHALL listar as turmas pelas quais a criança passou, da mais recente para a mais antiga. A turma atual SHALL aparecer como "<turma> · desde <dd/mm/aaaa>", e as anteriores como "<turma> · <entrada> – <saída>", com as datas no formato `dd/mm/aaaa`. Se o histórico não puder ser buscado, o cartão SHALL mostrar a mensagem de erro da integração com a API e o botão "Tentar de novo", sem esconder o resto da página.
