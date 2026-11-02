@@ -35,6 +35,16 @@ describe('LoginForm', () => {
 		expect(screen.queryByRole('link')).toBeNull()
 	})
 
+	it('envia por POST se a usuária enviar antes da hidratação, sem a senha na URL', () => {
+		render(<LoginForm onSubmit={vi.fn()} />)
+		expect(
+			screen
+				.getByRole('button', { name: 'Entrar' })
+				.closest('form')
+				?.getAttribute('method'),
+		).toBe('post')
+	})
+
 	it('mostra erro nos dois campos vazios sem chamar a ação', async () => {
 		const onSubmit = vi.fn()
 		render(<LoginForm onSubmit={onSubmit} />)
