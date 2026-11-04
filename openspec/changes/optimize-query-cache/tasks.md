@@ -2,7 +2,7 @@
 
 ## 1. Linha de base (antes de qualquer deploy desta change)
 
-- [ ] 1.1 Rodar em produção o roteiro de D11 (login como coordenadora; Usuários → Turmas → Início → Turmas; renomear uma turma; `/criancas` → detalhes → voltar; 10 F5 em `/configuracoes/usuarios`) e registrar na tarefa do ClickUp o número de linhas `[educare-api] GET …` por rota nos Runtime Logs da Vercel, com os tempos, e o p95 por rota do Actuator do back, se a subtarefa [Back] de medição já estiver no ar (D11). Verificar conferindo o comentário com os números na tarefa [Otimizar requisições](https://app.clickup.com/t/1dfh60ph1zx)
+- [x] 1.1 Rodar em produção o roteiro de D11 (login como coordenadora; Usuários → Turmas → Início → Turmas; renomear uma turma; `/criancas` → detalhes → voltar; 10 F5 em `/configuracoes/usuarios`) e registrar na tarefa do ClickUp o número de linhas `[educare-api] GET …` por rota nos Runtime Logs da Vercel, com os tempos, e o p95 por rota do Actuator do back, se a subtarefa [Back] de medição já estiver no ar (D11). Verificar conferindo o comentário com os números na tarefa [Otimizar requisições](https://app.clickup.com/t/1dfh60ph1zx)
 
 ## 2. Tempos, tabela de invalidação e mensagem de `429` (não depende do back)
 

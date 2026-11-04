@@ -1,0 +1,271 @@
+[
+ {
+  "step": "Carga completa de Usuários",
+  "at": "2026-11-04T00:36:02.680Z",
+  "document": {
+   "ttfb": 21,
+   "load": 597
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4",
+    "ms": 294
+   }
+  ]
+ },
+ {
+  "step": "Usuários → Turmas",
+  "at": "2026-11-04T00:36:04.233Z",
+  "serverFn": [
+   {
+    "fn": "bcf262bb",
+    "ms": 281
+   }
+  ]
+ },
+ {
+  "step": "Turmas → Início",
+  "at": "2026-11-04T00:36:06.555Z",
+  "serverFn": []
+ },
+ {
+  "step": "Início → Configurações (Usuários)",
+  "at": "2026-11-04T00:36:08.606Z",
+  "serverFn": [
+   {
+    "fn": "b48994e4",
+    "ms": 536
+   }
+  ]
+ },
+ {
+  "step": "Usuários → Turmas (de novo)",
+  "at": "2026-11-04T00:36:10.684Z",
+  "serverFn": []
+ },
+ {
+  "step": "Renomear turma",
+  "at": "2026-11-04T00:36:13.943Z",
+  "serverFn": [
+   {
+    "fn": "4a13c63a",
+    "ms": 528
+   },
+   {
+    "fn": "bcf262bb",
+    "ms": 429
+   }
+  ]
+ },
+ {
+  "step": "Desfazer o nome",
+  "at": "2026-11-04T00:36:18.277Z",
+  "serverFn": [
+   {
+    "fn": "4a13c63a",
+    "ms": 343
+   },
+   {
+    "fn": "bcf262bb",
+    "ms": 272
+   }
+  ]
+ },
+ {
+  "step": "Turmas → Crianças",
+  "at": "2026-11-04T00:36:20.596Z",
+  "serverFn": [
+   {
+    "fn": "87b5eddd",
+    "ms": 298
+   },
+   {
+    "fn": "87b5eddd",
+    "ms": 288
+   }
+  ]
+ },
+ {
+  "step": "Crianças → detalhes",
+  "at": "2026-11-04T00:36:22.664Z",
+  "serverFn": [
+   {
+    "fn": "2c14dc9c",
+    "ms": 282
+   },
+   {
+    "fn": "8d208e61",
+    "ms": 530
+   }
+  ]
+ },
+ {
+  "step": "Detalhes → voltar à lista",
+  "at": "2026-11-04T00:36:24.188Z",
+  "serverFn": []
+ },
+ {
+  "step": "Crianças → página 2",
+  "at": "2026-11-04T00:36:25.714Z",
+  "serverFn": [
+   {
+    "fn": "87b5eddd",
+    "ms": 290
+   }
+  ]
+ },
+ {
+  "step": "Crianças → Início",
+  "at": "2026-11-04T00:36:27.560Z",
+  "serverFn": []
+ },
+ {
+  "step": "Início → Crianças (em menos de 1 min)",
+  "at": "2026-11-04T00:36:29.593Z",
+  "serverFn": []
+ },
+ {
+  "step": "início dos 10 F5",
+  "at": "2026-11-04T00:36:30.575Z"
+ },
+ {
+  "step": "F5 1 em Usuários",
+  "at": "2026-11-04T00:36:32.819Z",
+  "document": {
+   "ttfb": 16,
+   "load": 357
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4",
+    "ms": 284
+   }
+  ]
+ },
+ {
+  "step": "F5 2 em Usuários",
+  "at": "2026-11-04T00:36:35.049Z",
+  "document": {
+   "ttfb": 16,
+   "load": 345
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4",
+    "ms": 313
+   }
+  ]
+ },
+ {
+  "step": "F5 3 em Usuários",
+  "at": "2026-11-04T00:36:37.279Z",
+  "document": {
+   "ttfb": 15,
+   "load": 353
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4",
+    "ms": 281
+   }
+  ]
+ },
+ {
+  "step": "F5 4 em Usuários",
+  "at": "2026-11-04T00:36:39.504Z",
+  "document": {
+   "ttfb": 15,
+   "load": 345
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4",
+    "ms": 277
+   }
+  ]
+ },
+ {
+  "step": "F5 5 em Usuários",
+  "at": "2026-11-04T00:36:41.730Z",
+  "document": {
+   "ttfb": 15,
+   "load": 351
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4",
+    "ms": 279
+   }
+  ]
+ },
+ {
+  "step": "F5 6 em Usuários",
+  "at": "2026-11-04T00:36:43.954Z",
+  "document": {
+   "ttfb": 15,
+   "load": 341
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4",
+    "ms": 283
+   }
+  ]
+ },
+ {
+  "step": "F5 7 em Usuários",
+  "at": "2026-11-04T00:36:46.185Z",
+  "document": {
+   "ttfb": 15,
+   "load": 342
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4",
+    "ms": 277
+   }
+  ]
+ },
+ {
+  "step": "F5 8 em Usuários",
+  "at": "2026-11-04T00:36:48.421Z",
+  "document": {
+   "ttfb": 25,
+   "load": 348
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4",
+    "ms": 271
+   }
+  ]
+ },
+ {
+  "step": "F5 9 em Usuários",
+  "at": "2026-11-04T00:36:50.687Z",
+  "document": {
+   "ttfb": 16,
+   "load": 393
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4",
+    "ms": 288
+   }
+  ]
+ },
+ {
+  "step": "F5 10 em Usuários",
+  "at": "2026-11-04T00:36:52.913Z",
+  "document": {
+   "ttfb": 15,
+   "load": 334
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4",
+    "ms": 274
+   }
+  ]
+ }
+]
