@@ -84,6 +84,7 @@ As leituras de turmas, usuários e crianças em `functions.ts` passam por `serve
 - Uma gravação que passa por `afterWrite(result, invalidates.x)` limpa as tags para todas as sessões, no sucesso e no `404`. O logout, a troca de senha e um `401` limpam a sessão (`forgetSession`).
 - `/auth/me` (`getCurrentUser`) **nunca** passa pelo cache: é ele que revoga a sessão depois de uma troca de senha.
 - Cada instância da função na Vercel tem o próprio cache. Uma gravação atendida por outra instância pode levar até 30 s para aparecer.
+- **Dívida técnica:** "Atualizar" também passa pelo cache, então, dentro dos 30 s, pode trazer a lista guardada mesmo mostrando "Atualizado agora". A correção sugerida está em `openspec/changes/archive/2026-11-04-optimize-query-cache/design.md` (Risks / Trade-offs).
 - Um acerto gera no log `[educare-api] cache <tag> hit`, só com a tag. Nunca registre a chave (pode ter o nome buscado), o token nem o valor. Para medir, conte essas linhas e as `[educare-api] GET …` nos Runtime Logs da Vercel.
 
 ### `EDUCARE_API_URL`

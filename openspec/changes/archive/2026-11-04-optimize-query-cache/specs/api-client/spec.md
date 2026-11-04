@@ -11,6 +11,8 @@ Uma gravação bem-sucedida de turma, usuário ou criança que passa pelo servid
 
 Quando houver mais de uma instância do servidor, cada uma SHALL ter o próprio cache; uma gravação feita por outra instância pode levar até 30 segundos para aparecer.
 
+O botão "Atualizar" das listas também passa por esse cache: dentro dos 30 segundos, ele SHALL receber o que a sessão já tem guardado, mesmo mostrando "Atualizado agora" (dívida técnica aceita; veja o design).
+
 #### Scenario: F5 repetido na lista
 - **WHEN** a coordenadora está em `/configuracoes/usuarios` e aperta F5 10 vezes em 30 segundos, todas atendidas pela mesma instância
 - **THEN** a API recebe 10 chamadas a `GET /api/v1/auth/me` e no máximo 1 a `GET /api/v1/users`
@@ -30,6 +32,10 @@ Quando houver mais de uma instância do servidor, cada uma SHALL ter o próprio 
 #### Scenario: Prazo vencido
 - **WHEN** a lista de crianças foi guardada há 31 segundos, e a mesma sessão pede a mesma lista
 - **THEN** o servidor do frontend chama a API de novo
+
+#### Scenario: Atualizar dentro dos 30 segundos
+- **WHEN** a lista de turmas foi guardada há 10 segundos para Ana, uma turma é criada por outra instância do servidor (ou direto na API), e Ana clica em "Atualizar"
+- **THEN** o servidor do frontend responde com a lista guardada, sem chamar a API, e a turma nova só aparece num "Atualizar" feito depois dos 30 segundos
 
 #### Scenario: Erro não é guardado
 - **WHEN** a API responde `500` à lista de turmas, e a mesma sessão clica em "Tentar de novo"

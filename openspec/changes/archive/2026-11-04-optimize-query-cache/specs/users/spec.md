@@ -5,7 +5,7 @@
 ### Requirement: Dados de usuários reaproveitados e atualizados sem recarregar
 Cada página da lista de usuários SHALL ser reaproveitada por 1 minuto: voltar a ela dentro desse prazo, sem nenhuma gravação no meio, SHALL mostrar a lista na hora, sem marcadores de carregamento e sem nova chamada. Depois de 1 minuto, a página guardada SHALL aparecer na hora e ser atualizada em segundo plano. Ao abrir ou recarregar diretamente `/configuracoes/usuarios` (com o `?pagina=N` do endereço), a página SHALL chegar do servidor já com a lista, sem marcadores de carregamento, e o navegador SHALL NOT repetir a chamada. Ao trocar de página na própria aba, a página anterior SHALL continuar na tela até a nova chegar.
 
-Abaixo do subtítulo, a aba SHALL mostrar "Atualizado agora" quando a página mostrada tem menos de 1 minuto e "Atualizado há N min" depois disso, e o botão "Atualizar", que busca de novo só a página mostrada e fica desabilitado enquanto ela é buscada.
+Abaixo do subtítulo, a aba SHALL mostrar "Atualizado agora" quando a página mostrada tem menos de 1 minuto e "Atualizado há N min" depois disso, e o botão "Atualizar", que busca de novo só a página mostrada e fica desabilitado enquanto ela é buscada. A busca passa pelo cache curto do servidor do frontend (ver "Cache curto no servidor do frontend" em `api-client`).
 
 Depois de criar, editar, redefinir a senha ou excluir um usuário com sucesso (ou de receber `404` ao editar, redefinir ou excluir), a lista de usuários (todas as páginas) SHALL ser buscada de novo na próxima vez que for mostrada, e as outras consultas SHALL NOT ser buscadas de novo, exceto a sessão quando o usuário editado for o da sessão. Uma gravação que falha por outro motivo SHALL NOT provocar nenhuma nova busca.
 

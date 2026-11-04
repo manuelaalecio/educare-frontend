@@ -5,7 +5,7 @@
 ### Requirement: Dados de turmas reaproveitados e atualizados sem recarregar
 A lista de turmas SHALL ser reaproveitada por 5 minutos: voltar a `/configuracoes/turmas` dentro desse prazo, sem nenhuma gravação no meio, SHALL mostrar a lista na hora, sem marcadores de carregamento e sem nova chamada. Depois de 5 minutos, a lista guardada SHALL aparecer na hora e ser atualizada em segundo plano. Ao abrir ou recarregar diretamente `/configuracoes/turmas`, a página SHALL chegar do servidor já com a lista, sem marcadores de carregamento, e o navegador SHALL NOT repetir a chamada.
 
-Abaixo do subtítulo, a aba SHALL mostrar "Atualizado agora" quando a lista tem menos de 1 minuto e "Atualizado há N min" depois disso, e o botão "Atualizar", que busca de novo só a lista de turmas e fica desabilitado enquanto ela é buscada.
+Abaixo do subtítulo, a aba SHALL mostrar "Atualizado agora" quando a lista tem menos de 1 minuto e "Atualizado há N min" depois disso, e o botão "Atualizar", que busca de novo só a lista de turmas e fica desabilitado enquanto ela é buscada. A busca passa pelo cache curto do servidor do frontend (ver "Cache curto no servidor do frontend" em `api-client`).
 
 Depois de criar, renomear ou excluir uma turma com sucesso (ou de receber `404` ao renomear ou excluir), a lista de turmas SHALL ser buscada de novo, e as outras consultas SHALL NOT ser buscadas de novo, com uma exceção: renomear SHALL fazer as páginas de crianças mostrarem o nome novo da turma na próxima vez que forem abertas. Uma gravação que falha por outro motivo SHALL NOT provocar nenhuma nova busca.
 

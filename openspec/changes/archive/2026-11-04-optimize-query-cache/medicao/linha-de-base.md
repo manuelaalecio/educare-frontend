@@ -16,10 +16,10 @@
 | Usuários → Turmas (de novo) | 0, turmas guardadas por 5 min | |
 | Renomear turma | 2 | `PUT classrooms/{id}` + `classrooms` |
 | Desfazer o nome | 2 | `PUT classrooms/{id}` + `classrooms` |
-| Turmas → Crianças | **2, a mesma lista duas vezes** | `children` ×2 |
+| Turmas → Crianças | 2: a página 1 e a página 2, que a lista antecipa | `children` ×2 |
 | Crianças → detalhes | 2 | `children/{id}` + `children/{id}/classrooms` |
 | Detalhes → voltar à lista | 0 | |
-| Crianças → página 2 | 1 | `children` |
+| Crianças → página 2 | 1: a página 3, antecipada | `children` |
 | Crianças → Início → Crianças (< 1 min) | 0 | |
 | **10 F5 em Usuários** | **10**, uma por F5 | **20**: 10 `auth/me` (SSR) + 10 `users` |
 
@@ -44,7 +44,7 @@ O roteiro inteiro fez **35 chamadas ao Spring**: 33 leituras e 2 gravações.
 
 ## Observações
 
-- **Turmas → Crianças busca a lista duas vezes** (21:36:20.11 e 21:36:20.41, com a mesma resposta). A causa provável é o preload por intenção (o clique passa o ponteiro sobre o link), seguido de uma segunda busca na navegação. A medição depois do deploy vai mostrar se isso continua.
+- As 2 chamadas a `/children` ao entrar em Crianças (21:36:20.11 e 21:36:20.41) **não são duplicação**: a primeira é a página 1, e a segunda é a página 2, que a lista antecipa de propósito para "Próxima" abrir na hora (`prefetchQuery` em `children-section.tsx`). Do mesmo jeito, a chamada em "Crianças → página 2" é a página 3.
 - **Cerca de 240 ms a mais na primeira chamada depois de uma pausa** (`auth/me` 359 ms, `users` 360 ms, `PUT` 363 ms, `children/{id}/classrooms` 357 ms; as demais ficam em 120–130 ms). Isso puxa os p95 para cima. Parece a abertura de uma conexão TLS nova do BFF até a API. Não faz parte desta change, mas vale olhar o keep-alive.
 - O p95 do Actuator (subtarefa [Back]) continua sendo a referência para o tempo do Spring. Os tempos acima incluem a rede entre a Vercel e a VM.
 
