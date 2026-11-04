@@ -1,4 +1,5 @@
 import {
+	act,
 	cleanup,
 	fireEvent,
 	render,
@@ -17,6 +18,7 @@ import {
 	updateUser,
 } from '#/integrations/educare-api/functions'
 import { messages } from '#/integrations/educare-api/messages'
+import { keys } from '#/integrations/educare-api/queries'
 import type { User } from '#/integrations/educare-api/users'
 import { attach, renderRoutes } from '#/testing/render-route'
 import { Route as AuthenticatedRoute } from './_authenticated'
@@ -258,7 +260,7 @@ describe('lista de usuários', () => {
 		db = [ana]
 		listMock.mockImplementation(() => new Promise(() => {}))
 		session(ana)
-		const { screen } = await renderRoutes('/configuracoes/usuarios', (root) => {
+		const { screen, router } = await renderRoutes('/', (root) => {
 			const layout = attach(AuthenticatedRoute, root, {
 				id: '/_authenticated',
 			})
@@ -277,7 +279,10 @@ describe('lista de usuários', () => {
 				]),
 			]
 		})
-		expect(await screen.findAllByTestId('user-skeleton')).toHaveLength(3)
+		void router.navigate({ to: '/configuracoes/usuarios' })
+		expect(
+			await screen.findAllByTestId('user-skeleton', {}, { timeout: 3000 }),
+		).toHaveLength(3)
 		expect(screen.queryByText(/com acesso ao sistema/)).toBeNull()
 		expect(screen.queryByText(/^Mostrando/)).toBeNull()
 	})
@@ -329,6 +334,16 @@ describe('paginação', () => {
 			user(`Pessoa ${String(i + 1).padStart(2, '0')}`),
 		),
 	]
+
+	it('?pagina=2 chega do loader já com a página, numa chamada só', async () => {
+		const { screen } = await open('/configuracoes/usuarios?pagina=2', many)
+
+		// Sem `findBy`: o `loader` já terminou quando a página aparece.
+		expect(screen.getByText('Mostrando 21–25 de 25')).toBeDefined()
+		expect(screen.queryAllByTestId('user-skeleton')).toEqual([])
+		expect(listMock).toHaveBeenCalledTimes(1)
+		expect(listMock).toHaveBeenCalledWith({ data: { page: 2 } })
+	})
 
 	it('com uma página só, os dois botões ficam desabilitados', async () => {
 		const { screen } = await open()
@@ -872,5 +887,136 @@ describe('excluir usuário', () => {
 
 		expect(await screen.findByText('Mostrando 1–20 de 20')).toBeDefined()
 		expect(router.state.location.href).toBe('/configuracoes/usuarios')
+	})
+})
+
+describe('invalidação depois de gravar', () => {
+	function fillNewUser(dialog: Dialog) {
+		type(dialog, 'Nome', 'Mariana Alves')
+		type(dialog, 'Email', 'mariana.alves@educare.org')
+		type(dialog, 'Senha', 'senha-forte-1')
+	}
+
+	it('criar busca só a lista de usuários', async () => {
+		createMock.mockImplementation((async ({ data }: { data: User }) => {
+			db.push(user(data.name, data.role))
+			return { ok: true }
+		}) as never)
+		const { screen, queryClient } = await open()
+		await table(screen)
+		queryClient.setQueryData(keys.classrooms, [])
+		const dialog = await openDialog(screen, 'Novo usuário', 'Novo usuário')
+		fillNewUser(dialog)
+		submit(dialog, 'Criar usuário')
+
+		await rowOf(screen, 'Mariana Alves')
+		expect(listMock).toHaveBeenCalledTimes(2)
+		expect(queryClient.getQueryState(keys.classrooms)?.isInvalidated).toBe(
+			false,
+		)
+		expect(queryClient.getQueryState(keys.session)?.isInvalidated).toBe(false)
+	})
+
+	it('o email duplicado (409) não busca nada de novo', async () => {
+		createMock.mockResolvedValue({
+			ok: false,
+			kind: 'conflict',
+			fieldErrors: { login: messages.userEmailTaken },
+		} as never)
+		const { screen, queryClient } = await open()
+		await table(screen)
+		const dialog = await openDialog(screen, 'Novo usuário', 'Novo usuário')
+		fillNewUser(dialog)
+		submit(dialog, 'Criar usuário')
+
+		expect(await dialog.findByText(messages.userEmailTaken)).toBeDefined()
+		expect(listMock).toHaveBeenCalledTimes(1)
+		expect(queryClient.getQueryState([...keys.users, 1])?.isInvalidated).toBe(
+			false,
+		)
+	})
+})
+
+describe('lista reaproveitada', () => {
+	afterEach(() => {
+		vi.restoreAllMocks()
+	})
+
+	it('voltar à aba em menos de 1 minuto não chama a API de novo', async () => {
+		const { screen, router } = await open()
+		await table(screen)
+		await router.navigate({ to: '/' })
+		expect(await screen.findByText('Página inicial')).toBeDefined()
+
+		await router.navigate({ to: '/configuracoes/usuarios' })
+
+		expect(await table(screen)).toBeDefined()
+		expect(screen.queryAllByTestId('user-skeleton')).toEqual([])
+		expect(listMock).toHaveBeenCalledTimes(1)
+	})
+
+	it('depois de 1 minuto mostra a lista guardada e atualiza em segundo plano', async () => {
+		const { screen, router } = await open()
+		await table(screen)
+		await router.navigate({ to: '/' })
+		const later = Date.now() + 61_000
+		vi.spyOn(Date, 'now').mockReturnValue(later)
+
+		await router.navigate({ to: '/configuracoes/usuarios' })
+
+		expect(screen.getByRole('table', { name: 'Usuários' })).toBeDefined()
+		await waitFor(() => expect(listMock).toHaveBeenCalledTimes(2))
+	})
+})
+
+describe('"Atualizado há" e "Atualizar"', () => {
+	const many = [
+		ana,
+		...Array.from({ length: 24 }, (_, i) =>
+			user(`Pessoa ${String(i + 1).padStart(2, '0')}`),
+		),
+	]
+
+	it('busca de novo só a página mostrada', async () => {
+		const { screen, queryClient } = await open(
+			'/configuracoes/usuarios?pagina=2',
+			many,
+		)
+		expect(screen.getByText('Atualizado agora')).toBeDefined()
+
+		const key = [...keys.users, 2]
+		act(() => {
+			queryClient.setQueryData(key, queryClient.getQueryData(key), {
+				updatedAt: Date.now() - 2 * 60_000,
+			})
+		})
+		expect(await screen.findByText('Atualizado há 2 min')).toBeDefined()
+
+		listMock.mockClear()
+		fireEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
+		expect(await screen.findByText('Atualizado agora')).toBeDefined()
+		expect(listMock).toHaveBeenCalledTimes(1)
+		expect(listMock).toHaveBeenCalledWith({ data: { page: 2 } })
+	})
+
+	it('no 429 ao criar, o modal continua aberto com o alerta', async () => {
+		createMock.mockResolvedValue({
+			ok: false,
+			kind: 'too-many-requests',
+			message: messages.tooManyRequests,
+			fieldErrors: {},
+		} as never)
+		const { screen } = await open()
+		await table(screen)
+		const dialog = await openDialog(screen, 'Novo usuário', 'Novo usuário')
+		type(dialog, 'Nome', 'Mariana Alves')
+		type(dialog, 'Email', 'mariana.alves@educare.org')
+		type(dialog, 'Senha', 'senha-forte-1')
+		submit(dialog, 'Criar usuário')
+
+		expect((await dialog.findByRole('alert')).textContent).toBe(
+			'Muitas requisições. Aguarde um instante.',
+		)
+		expect(screen.getByRole('dialog', { name: 'Novo usuário' })).toBeDefined()
 	})
 })

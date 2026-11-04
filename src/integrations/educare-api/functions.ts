@@ -21,8 +21,15 @@ import {
 	renameClassroom as performRenameClassroom,
 } from './classrooms'
 import { createApiClient } from './client'
+import { invalidates } from './invalidation'
 import { authenticated } from './middleware'
 import { requestCookies } from './request'
+import {
+	afterWrite,
+	forgetSession,
+	serverCache,
+	sessionOf,
+} from './server-cache'
 import {
 	listUsers,
 	createUser as performCreateUser,
@@ -47,6 +54,22 @@ import {
 
 // Server functions: só ligam a lógica de `auth.ts` ao Start. O token fica no
 // cookie `httpOnly` e nunca aparece no que estas funções devolvem.
+//
+// As leituras de turmas, usuários e crianças passam pelo cache curto do
+// servidor (`server-cache.ts`), por sessão; cada gravação limpa as tags da
+// tabela `invalidates`. `/auth/me` (`getCurrentUser`) nunca passa pelo cache.
+
+/** Lê pelo cache da sessão; a chave é o nome da leitura e a entrada validada. */
+function cachedRead<T extends { ok: boolean }>(
+	token: string,
+	tag: Parameters<typeof serverCache.read>[1],
+	name: string,
+	input: unknown,
+	load: () => Promise<T>,
+) {
+	const key = input === undefined ? name : `${name}:${JSON.stringify(input)}`
+	return serverCache.read(sessionOf(token), tag, key, load)
+}
 
 export const login = createServerFn({ method: 'POST' })
 	.validator(loginSchema)
@@ -55,11 +78,15 @@ export const login = createServerFn({ method: 'POST' })
 	)
 
 export const logout = createServerFn({ method: 'POST' }).handler(() =>
-	performLogout({ cookies: requestCookies }),
+	performLogout({ cookies: requestCookies, forgetSession }),
 )
 
 export const getCurrentUser = createServerFn({ method: 'POST' }).handler(() =>
-	fetchSession({ api: createApiClient, cookies: requestCookies }),
+	fetchSession({
+		api: createApiClient,
+		cookies: requestCookies,
+		forgetSession,
+	}),
 )
 
 export const changeOwnPassword = createServerFn({ method: 'POST' })
@@ -67,7 +94,11 @@ export const changeOwnPassword = createServerFn({ method: 'POST' })
 	.validator(changePasswordSchema)
 	.handler(({ data, context }) =>
 		performChangePassword(
-			{ api: createApiClient(context.token), cookies: requestCookies },
+			{
+				api: createApiClient(context.token),
+				cookies: requestCookies,
+				forgetSession,
+			},
 			data,
 		),
 	)
@@ -77,27 +108,40 @@ export const changeOwnPassword = createServerFn({ method: 'POST' })
 
 export const getClassrooms = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
-	.handler(({ context }) => listClassrooms(createApiClient(context.token)))
+	.handler(({ context }) =>
+		cachedRead(context.token, 'classrooms', 'list', undefined, () =>
+			listClassrooms(createApiClient(context.token)),
+		),
+	)
 
 export const createClassroom = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(classroomNameSchema)
-	.handler(({ data, context }) =>
-		performCreateClassroom(createApiClient(context.token), data),
+	.handler(async ({ data, context }) =>
+		afterWrite(
+			await performCreateClassroom(createApiClient(context.token), data),
+			invalidates.createClassroom,
+		),
 	)
 
 export const renameClassroom = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(renameClassroomSchema)
-	.handler(({ data, context }) =>
-		performRenameClassroom(createApiClient(context.token), data),
+	.handler(async ({ data, context }) =>
+		afterWrite(
+			await performRenameClassroom(createApiClient(context.token), data),
+			invalidates.renameClassroom,
+		),
 	)
 
 export const deleteClassroom = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(classroomIdSchema)
-	.handler(({ data, context }) =>
-		performDeleteClassroom(createApiClient(context.token), data),
+	.handler(async ({ data, context }) =>
+		afterWrite(
+			await performDeleteClassroom(createApiClient(context.token), data),
+			invalidates.deleteClassroom,
+		),
 	)
 
 // Usuários: a API devolve 403 para quem não é COORDENADOR. Os validators
@@ -107,35 +151,49 @@ export const getUsers = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(z.object({ page: z.number().int().min(1) }))
 	.handler(({ data, context }) =>
-		listUsers(createApiClient(context.token), data),
+		cachedRead(context.token, 'users', 'list', data, () =>
+			listUsers(createApiClient(context.token), data),
+		),
 	)
 
 export const createUser = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(createUserSchema)
-	.handler(({ data, context }) =>
-		performCreateUser(createApiClient(context.token), data),
+	.handler(async ({ data, context }) =>
+		afterWrite(
+			await performCreateUser(createApiClient(context.token), data),
+			invalidates.createUser,
+		),
 	)
 
 export const updateUser = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(updateUserSchema)
-	.handler(({ data, context }) =>
-		performUpdateUser(createApiClient(context.token), data),
+	.handler(async ({ data, context }) =>
+		afterWrite(
+			await performUpdateUser(createApiClient(context.token), data),
+			invalidates.updateUser,
+		),
 	)
 
 export const resetUserPassword = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(resetPasswordSchema)
-	.handler(({ data, context }) =>
-		performResetUserPassword(createApiClient(context.token), data),
+	.handler(async ({ data, context }) =>
+		afterWrite(
+			await performResetUserPassword(createApiClient(context.token), data),
+			invalidates.resetUserPassword,
+		),
 	)
 
 export const deleteUser = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(userIdSchema)
-	.handler(({ data, context }) =>
-		performDeleteUser(createApiClient(context.token), data),
+	.handler(async ({ data, context }) =>
+		afterWrite(
+			await performDeleteUser(createApiClient(context.token), data),
+			invalidates.deleteUser,
+		),
 	)
 
 // Crianças: os filtros da lista são os da URL (`pagina` começa em 1). Nada
@@ -151,40 +209,55 @@ export const getChildren = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(childrenFiltersSchema)
 	.handler(({ data, context }) =>
-		listChildren(createApiClient(context.token), data),
+		cachedRead(context.token, 'children', 'list', data, () =>
+			listChildren(createApiClient(context.token), data),
+		),
 	)
 
 export const getChild = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(childIdSchema)
 	.handler(({ data, context }) =>
-		performGetChild(createApiClient(context.token), data),
+		cachedRead(context.token, 'children', 'detail', data, () =>
+			performGetChild(createApiClient(context.token), data),
+		),
 	)
 
 export const getChildClassrooms = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(childIdSchema)
 	.handler(({ data, context }) =>
-		listChildClassrooms(createApiClient(context.token), data),
+		cachedRead(context.token, 'children', 'classrooms', data, () =>
+			listChildClassrooms(createApiClient(context.token), data),
+		),
 	)
 
 export const createChild = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(childRequestSchema)
-	.handler(({ data, context }) =>
-		performCreateChild(createApiClient(context.token), data),
+	.handler(async ({ data, context }) =>
+		afterWrite(
+			await performCreateChild(createApiClient(context.token), data),
+			invalidates.createChild,
+		),
 	)
 
 export const updateChild = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(updateChildSchema)
-	.handler(({ data, context }) =>
-		performUpdateChild(createApiClient(context.token), data),
+	.handler(async ({ data, context }) =>
+		afterWrite(
+			await performUpdateChild(createApiClient(context.token), data),
+			invalidates.updateChild,
+		),
 	)
 
 export const deleteChild = createServerFn({ method: 'POST' })
 	.middleware([authenticated])
 	.validator(childIdSchema)
-	.handler(({ data, context }) =>
-		performDeleteChild(createApiClient(context.token), data),
+	.handler(async ({ data, context }) =>
+		afterWrite(
+			await performDeleteChild(createApiClient(context.token), data),
+			invalidates.deleteChild,
+		),
 	)

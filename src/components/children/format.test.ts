@@ -18,7 +18,6 @@ import {
 	orNotInformed,
 	periodLabel,
 	raceLabels,
-	updatedAtLabel,
 } from './format'
 
 describe('ageLabel', () => {
@@ -133,19 +132,6 @@ describe('childCountLabel', () => {
 		[2, true, '2 crianças encontradas'],
 	])('%i com filtro=%s: %s', (count, filtered, label) => {
 		expect(childCountLabel(count, filtered)).toBe(label)
-	})
-})
-
-describe('updatedAtLabel', () => {
-	const now = 1_800_000_000_000
-
-	it.each([
-		[0, 'Atualizado agora'],
-		[59_999, 'Atualizado agora'],
-		[60_000, 'Atualizado há 1 min'],
-		[3 * 60_000 + 30_000, 'Atualizado há 3 min'],
-	])('há %i ms: %s', (elapsed, label) => {
-		expect(updatedAtLabel(now - elapsed, now)).toBe(label)
 	})
 })
 

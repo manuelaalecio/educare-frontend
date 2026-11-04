@@ -7,6 +7,7 @@ export const messages = {
 	sessionExpired: 'Sua sessão expirou. Entre de novo para continuar.',
 	passwordChanged: 'Senha alterada. Outros dispositivos foram desconectados.',
 	tooManyAttempts: 'Muitas tentativas. Tente novamente em alguns minutos.',
+	tooManyRequests: 'Muitas requisições. Aguarde um instante.',
 	validation: 'Confira os campos destacados.',
 	notFound: 'Não encontramos o que você procurou.',
 	conflict: 'Já existe um registro com esses dados.',

@@ -23,10 +23,9 @@ export async function renderRoutes(
 	url: string,
 	routes: (root: AnyRoute) => AnyRoute[],
 ) {
-	// O mesmo `QueryClient` do app (com o `MutationCache` que invalida
-	// `meta.invalidates`), sem novas tentativas para os erros aparecerem na hora.
+	// O mesmo `QueryClient` do app: `MutationCache` que invalida
+	// `meta.invalidates` e nenhuma nova tentativa automática.
 	const queryClient = createQueryClient()
-	queryClient.setDefaultOptions({ queries: { retry: false } })
 	const root = createRootRouteWithContext<Context>()({
 		component: Outlet,
 	})

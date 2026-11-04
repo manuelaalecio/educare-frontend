@@ -77,4 +77,36 @@ describe('runWithSession', () => {
 		expect(error).toBeInstanceOf(ApiError)
 		expect(jar.clear).not.toHaveBeenCalled()
 	})
+
+	it('no 401, descarta o cache da sessão do token', async () => {
+		const forgetSession = vi.fn()
+		await caught(
+			runWithSession(
+				cookies('token-revogado'),
+				'/',
+				async () => {
+					throw new ApiError('unauthorized', { status: 401 })
+				},
+				forgetSession,
+			),
+		)
+		expect(forgetSession).toHaveBeenCalledWith('token-revogado')
+	})
+
+	it('sem 401 nem sem cookie, não mexe no cache', async () => {
+		const forgetSession = vi.fn()
+		await runWithSession(cookies('t'), '/', async () => 'ok', forgetSession)
+		await caught(runWithSession(cookies(), '/', vi.fn(), forgetSession))
+		await caught(
+			runWithSession(
+				cookies('t'),
+				'/',
+				async () => {
+					throw new ApiError('forbidden', { status: 403 })
+				},
+				forgetSession,
+			),
+		)
+		expect(forgetSession).not.toHaveBeenCalled()
+	})
 })

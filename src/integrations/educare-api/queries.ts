@@ -6,7 +6,6 @@ import {
 	queryOptions,
 } from '@tanstack/react-query'
 import { isNotFound, isRedirect } from '@tanstack/react-router'
-import type { ChildrenFilters } from './children'
 import {
 	getChild,
 	getChildClassrooms,
@@ -15,28 +14,23 @@ import {
 	getCurrentUser,
 	getUsers,
 } from './functions'
+import { type ChildFilters, keys } from './keys'
 import { childIdSchema } from './validation'
 
-/**
- * Filtros da lista de crianças, como na URL (`pagina` começa em 1). Nunca
- * dados de saúde ou documentos: a chave fica no cache e no HTML do SSR.
- * É o mesmo tipo que `listChildren` recebe.
- */
-export type ChildFilters = ChildrenFilters
+export { type ChildFilters, keys } from './keys'
 
 /**
- * Chaves das consultas da API. Invalidar uma chave invalida também as que
- * começam com ela: `keys.children` pega lista, detalhes e histórico.
+ * Por quanto tempo cada tipo de dado é reaproveitado sem nova chamada. Depois
+ * disso, os dados guardados aparecem na hora e são atualizados em segundo plano.
+ * Sem novas tentativas automáticas (`defaultOptions` do `QueryClient`): com o
+ * timeout de 10 s da API, o erro demoraria quase um minuto; a tela oferece
+ * "Tentar de novo".
  */
-export const keys = {
-	session: ['educare-api', 'session'],
-	classrooms: ['educare-api', 'classrooms'],
-	users: ['educare-api', 'users'],
-	children: ['educare-api', 'children'],
-	childList: (filters: ChildFilters) =>
-		[...keys.children, 'list', filters] as const,
-	child: (id: string) => [...keys.children, 'detail', id] as const,
-	childClassrooms: (id: string) => [...keys.child(id), 'classrooms'] as const,
+export const staleTimes = {
+	session: 5 * 60_000,
+	classrooms: 5 * 60_000,
+	users: 60_000,
+	children: 60_000,
 } as const
 
 // Navegações internas reaproveitam a sessão por 5 minutos; um carregamento
@@ -44,11 +38,11 @@ export const keys = {
 export const currentUserQuery = queryOptions({
 	queryKey: keys.session,
 	queryFn: () => getCurrentUser(),
-	staleTime: 5 * 60_000,
+	staleTime: staleTimes.session,
 })
 
-// Lista de turmas de Configurações › Turmas. Buscada no navegador (sem
-// `loader`): a aba mostra o skeleton e trata o erro com "Tentar de novo".
+// Lista de turmas de Configurações › Turmas, do filtro de crianças e do
+// formulário de criança.
 export const classroomsQuery = queryOptions({
 	queryKey: keys.classrooms,
 	queryFn: async () => {
@@ -56,17 +50,11 @@ export const classroomsQuery = queryOptions({
 		if (!result.ok) throw new Error(result.message)
 		return result.classrooms
 	},
-	staleTime: 5 * 60_000,
-	// Sem novas tentativas automáticas: com o timeout de 10 s da API, o erro
-	// demoraria quase um minuto; a aba oferece "Tentar de novo".
-	retry: false,
+	staleTime: staleTimes.classrooms,
 })
 
-// Lista de Configurações › Usuários, uma página por vez (começando em 1).
-// Buscada no navegador, como a de turmas. A página anterior continua na tela
-// enquanto a próxima carrega.
-export const usersQueryKey = keys.users
-
+// Lista de Configurações › Usuários, uma página por vez (começando em 1). A
+// página anterior continua na tela enquanto a próxima carrega.
 export const usersQuery = (page: number) =>
 	queryOptions({
 		queryKey: [...keys.users, page],
@@ -75,14 +63,11 @@ export const usersQuery = (page: number) =>
 			if (!result.ok) throw new Error(result.message)
 			return { users: result.users, page: result.page }
 		},
+		staleTime: staleTimes.users,
 		placeholderData: keepPreviousData,
-		retry: false,
 	})
 
-// Crianças: carregadas no `loader` com `loadQuery` (SSR) e guardadas por
-// 1 minuto. Sem novas tentativas automáticas, como as demais: a tela oferece
-// "Tentar de novo".
-const CHILDREN_STALE_TIME = 60_000
+// Crianças: carregadas no `loader` com `loadQuery` (SSR).
 
 /** Uma página da lista; a anterior continua na tela enquanto a próxima carrega. */
 export const childrenQuery = (filters: ChildFilters) =>
@@ -93,9 +78,8 @@ export const childrenQuery = (filters: ChildFilters) =>
 			if (!result.ok) throw new Error(result.message)
 			return { children: result.children, page: result.page }
 		},
-		staleTime: CHILDREN_STALE_TIME,
+		staleTime: staleTimes.children,
 		placeholderData: keepPreviousData,
-		retry: false,
 	})
 
 /** `null` quando a criança não existe, ou quando o id nem é um UUID (sem chamar a API). */
@@ -108,8 +92,7 @@ export const childQuery = (id: string) =>
 			if (!result.ok) throw new Error(result.message)
 			return result.child
 		},
-		staleTime: CHILDREN_STALE_TIME,
-		retry: false,
+		staleTime: staleTimes.children,
 	})
 
 /** Histórico de turmas, do período mais recente para o mais antigo. */
@@ -121,8 +104,7 @@ export const childClassroomsQuery = (id: string) =>
 			if (!result.ok) throw new Error(result.message)
 			return result.periods
 		},
-		staleTime: CHILDREN_STALE_TIME,
-		retry: false,
+		staleTime: staleTimes.children,
 	})
 
 /**

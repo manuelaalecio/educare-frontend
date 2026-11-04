@@ -1,5 +1,6 @@
 import { createMiddleware } from '@tanstack/react-start'
 import { requestCookies, requestPath } from './request'
+import { forgetSession } from './server-cache'
 import { runWithSession } from './session'
 
 /**
@@ -24,7 +25,10 @@ export const authenticated = createMiddleware({ type: 'function' })
 			typeof context.path === 'string' && context.path.startsWith('/')
 				? context.path
 				: requestPath()
-		return runWithSession(requestCookies, path, (token) =>
-			next({ context: { token } }),
+		return runWithSession(
+			requestCookies,
+			path,
+			(token) => next({ context: { token } }),
+			forgetSession,
 		)
 	})

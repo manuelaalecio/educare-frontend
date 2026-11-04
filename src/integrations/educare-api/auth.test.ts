@@ -162,6 +162,22 @@ describe('performLogout', () => {
 		expect(performLogout({ cookies })).toEqual({ ok: true })
 		expect(cookies.clear).toHaveBeenCalled()
 	})
+
+	it('descarta o cache da sessão antes de apagar o cookie', () => {
+		const order: string[] = []
+		const cookies = jar(TOKEN)
+		cookies.clear.mockImplementation(() => order.push('cookie'))
+		const forgetSession = vi.fn(() => order.push('cache'))
+		performLogout({ cookies, forgetSession })
+		expect(forgetSession).toHaveBeenCalledWith(TOKEN)
+		expect(order).toEqual(['cache', 'cookie'])
+	})
+
+	it('sem cookie não mexe no cache', () => {
+		const forgetSession = vi.fn()
+		performLogout({ cookies: jar(), forgetSession })
+		expect(forgetSession).not.toHaveBeenCalled()
+	})
 })
 
 describe('fetchSession', () => {
@@ -203,13 +219,16 @@ describe('fetchSession', () => {
 
 	it('com token recusado apaga o cookie e marca a sessão como expirada', async () => {
 		const cookies = jar(TOKEN)
+		const forgetSession = vi.fn()
 		const session = await fetchSession({
 			api: () => apiReturning(401, { title: 'Unauthorized', status: 401 }),
 			cookies,
+			forgetSession,
 		})
 
 		expect(session).toEqual({ user: null, expired: true })
 		expect(cookies.clear).toHaveBeenCalled()
+		expect(forgetSession).toHaveBeenCalledWith(TOKEN)
 	})
 })
 
@@ -232,6 +251,28 @@ describe('performChangePassword', () => {
 			{ body: values },
 		)
 		expect(cookies.set).toHaveBeenCalledWith(renewed.accessToken, 28800)
+	})
+
+	it('no sucesso descarta o cache do token antigo', async () => {
+		const forgetSession = vi.fn()
+		await performChangePassword(
+			{ api: apiReturning(200, renewed), cookies: jar(TOKEN), forgetSession },
+			values,
+		)
+		expect(forgetSession).toHaveBeenCalledWith(TOKEN)
+	})
+
+	it('na falha não mexe no cache', async () => {
+		const forgetSession = vi.fn()
+		await performChangePassword(
+			{
+				api: apiReturning(429, { title: 'Too Many Requests', status: 429 }),
+				cookies: jar(TOKEN),
+				forgetSession,
+			},
+			values,
+		)
+		expect(forgetSession).not.toHaveBeenCalled()
 	})
 
 	it('no 204 sem corpo devolve ok e mantém o cookie', async () => {

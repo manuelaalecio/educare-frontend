@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import { formatCreatedAt, plural } from './format'
+import { formatCreatedAt, plural, updatedAtLabel } from './format'
 
 describe('plural', () => {
 	it('concorda com o número', () => {
@@ -16,5 +16,18 @@ describe('formatCreatedAt', () => {
 
 	it('usa o fuso de São Paulo perto da meia-noite', () => {
 		expect(formatCreatedAt('2026-03-01T02:30:00Z')).toBe('28/02/2026')
+	})
+})
+
+describe('updatedAtLabel', () => {
+	const now = 1_800_000_000_000
+
+	it.each([
+		[0, 'Atualizado agora'],
+		[59_999, 'Atualizado agora'],
+		[60_000, 'Atualizado há 1 min'],
+		[3 * 60_000 + 30_000, 'Atualizado há 3 min'],
+	])('há %i ms: %s', (elapsed, label) => {
+		expect(updatedAtLabel(now - elapsed, now)).toBe(label)
 	})
 })

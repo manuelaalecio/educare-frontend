@@ -1,4 +1,6 @@
+import type { QueryClient } from '@tanstack/react-query'
 import {
+	act,
 	cleanup,
 	fireEvent,
 	render,
@@ -17,6 +19,7 @@ import {
 	renameClassroom,
 } from '#/integrations/educare-api/functions'
 import { messages } from '#/integrations/educare-api/messages'
+import { keys } from '#/integrations/educare-api/queries'
 import { attach, renderRoutes } from '#/testing/render-route'
 import { Route as AuthenticatedRoute } from './_authenticated'
 import { Route as SettingsRoute } from './_authenticated/configuracoes'
@@ -93,10 +96,17 @@ function listReturns(...results: unknown[]) {
 	})
 }
 
+let queryClient: QueryClient
+
 async function open() {
+	const result = await mount('/configuracoes/turmas')
+	return result.screen
+}
+
+async function mount(url: string) {
 	sessionMock.mockResolvedValue({ user: admin, expired: false } as never)
 	render(<Toaster />)
-	const result = await renderRoutes('/configuracoes/turmas', (root) => {
+	const result = await renderRoutes(url, (root) => {
 		const layout = attach(AuthenticatedRoute, root, { id: '/_authenticated' })
 		const settings = attach(SettingsRoute, layout, {
 			id: '/configuracoes',
@@ -113,7 +123,18 @@ async function open() {
 			]),
 		]
 	})
-	return result.screen
+	queryClient = result.queryClient
+	return result
+}
+
+/** Guarda listas de usuários e de crianças, para conferir o que é invalidado. */
+function seedOtherQueries() {
+	queryClient.setQueryData(keys.users, 'usuários')
+	queryClient.setQueryData(keys.childList({ pagina: 1 }), 'crianças')
+	return () =>
+		[keys.users, keys.childList({ pagina: 1 })].filter(
+			(key) => queryClient.getQueryState(key)?.isInvalidated,
+		)
 }
 
 type Screen = Awaited<ReturnType<typeof open>>
@@ -258,10 +279,17 @@ describe('lista de turmas', () => {
 
 	it('mostra o carregamento sem subtítulo enquanto a busca não termina', async () => {
 		listMock.mockReturnValue(new Promise(() => {}))
-		const screen = await open()
+		const { screen, router } = await mount('/')
+		void router.navigate({ to: '/configuracoes/turmas' })
 
 		expect(
-			(await screen.findAllByTestId('classroom-skeleton')).length,
+			(
+				await screen.findAllByTestId(
+					'classroom-skeleton',
+					{},
+					{ timeout: 3000 },
+				)
+			).length,
 		).toBeGreaterThan(0)
 		expect(screen.queryByText(/turmas? cadastradas?/)).toBeNull()
 		expect(screen.queryByRole('table')).toBeNull()
@@ -650,5 +678,161 @@ describe('comportamento dos modais', () => {
 		expect(await dialog.findByRole('alert')).toBeDefined()
 		expect(dialog.getByText(messages.unavailable)).toBeDefined()
 		expect(screen.getByRole('dialog', { name: 'Editar turma' })).toBeDefined()
+	})
+})
+
+describe('invalidação depois de gravar', () => {
+	it('criar busca só a lista de turmas', async () => {
+		listReturns(listing(turma1), listing(turma1, turma2))
+		createMock.mockResolvedValue({ ok: true } as never)
+		const screen = await open()
+		await table(screen)
+		const invalidated = seedOtherQueries()
+		const dialog = await openDialog(screen, 'Nova turma', 'Nova turma')
+
+		typeName(dialog, 'Turma 2')
+		fireEvent.click(dialog.getByRole('button', { name: 'Criar turma' }))
+
+		await waitFor(() =>
+			expect(rowNames(screen)).toEqual(['Turma 1', 'Turma 2']),
+		)
+		expect(listMock).toHaveBeenCalledTimes(2)
+		expect(invalidated()).toEqual([])
+	})
+
+	it('renomear busca as turmas e marca as crianças, mas não os usuários', async () => {
+		listReturns(listing(turma1), listing({ ...turma1, name: 'Maternal A' }))
+		renameMock.mockResolvedValue({ ok: true } as never)
+		const screen = await open()
+		await table(screen)
+		const invalidated = seedOtherQueries()
+		const dialog = await openDialog(screen, 'Editar Turma 1', 'Editar turma')
+
+		typeName(dialog, 'Maternal A')
+		fireEvent.click(dialog.getByRole('button', { name: 'Salvar alterações' }))
+
+		await waitFor(() => expect(rowNames(screen)).toEqual(['Maternal A']))
+		expect(listMock).toHaveBeenCalledTimes(2)
+		expect(invalidated()).toEqual([keys.childList({ pagina: 1 })])
+	})
+
+	it('excluir busca só a lista de turmas', async () => {
+		listReturns(listing(turma1, turma2), listing(turma2))
+		deleteMock.mockResolvedValue({ ok: true } as never)
+		const screen = await open()
+		await table(screen)
+		const invalidated = seedOtherQueries()
+		const dialog = await openDialog(
+			screen,
+			'Excluir Turma 1',
+			'Excluir Turma 1?',
+		)
+
+		fireEvent.click(dialog.getByRole('button', { name: 'Excluir turma' }))
+
+		await waitFor(() => expect(rowNames(screen)).toEqual(['Turma 2']))
+		expect(invalidated()).toEqual([])
+	})
+
+	it('o nome duplicado (409) não busca nada de novo', async () => {
+		listReturns(listing(turma1))
+		createMock.mockResolvedValue({
+			ok: false,
+			kind: 'conflict',
+			fieldErrors: { name: messages.classroomNameTaken },
+		} as never)
+		const screen = await open()
+		await table(screen)
+		const invalidated = seedOtherQueries()
+		const dialog = await openDialog(screen, 'Nova turma', 'Nova turma')
+
+		typeName(dialog, 'Turma 1')
+		fireEvent.click(dialog.getByRole('button', { name: 'Criar turma' }))
+
+		expect(await dialog.findByText(messages.classroomNameTaken)).toBeDefined()
+		expect(listMock).toHaveBeenCalledTimes(1)
+		expect(queryClient.getQueryState(keys.classrooms)?.isInvalidated).toBe(
+			false,
+		)
+		expect(invalidated()).toEqual([])
+	})
+})
+
+describe('lista reaproveitada', () => {
+	it('chega do loader já com a lista, sem marcadores de carregamento', async () => {
+		listReturns(listing(turma1))
+		const screen = await open()
+
+		// Sem `findBy`: o `loader` já terminou quando a aba aparece.
+		expect(screen.getByRole('table', { name: 'Turmas' })).toBeDefined()
+		expect(screen.queryAllByTestId('classroom-skeleton')).toEqual([])
+		expect(listMock).toHaveBeenCalledTimes(1)
+	})
+
+	it('voltar à aba em menos de 5 minutos não chama a API de novo', async () => {
+		listReturns(listing(turma1))
+		const { screen, router } = await mount('/configuracoes/turmas')
+		await table(screen)
+		await router.navigate({ to: '/' })
+		expect(await screen.findByText('Página inicial')).toBeDefined()
+		vi.spyOn(Date, 'now').mockReturnValue(Date.now() + 4 * 60_000)
+
+		await router.navigate({ to: '/configuracoes/turmas' })
+
+		expect(await table(screen)).toBeDefined()
+		expect(screen.queryAllByTestId('classroom-skeleton')).toEqual([])
+		expect(listMock).toHaveBeenCalledTimes(1)
+		vi.restoreAllMocks()
+	})
+})
+
+describe('"Atualizado há" e "Atualizar"', () => {
+	it('mostra a idade da lista e busca de novo só as turmas', async () => {
+		listReturns(listing(turma1))
+		const screen = await open()
+		await table(screen)
+		expect(screen.getByText('Atualizado agora')).toBeDefined()
+
+		act(() => {
+			queryClient.setQueryData(
+				keys.classrooms,
+				queryClient.getQueryData(keys.classrooms),
+				{ updatedAt: Date.now() - 3 * 60_000 },
+			)
+		})
+		expect(await screen.findByText('Atualizado há 3 min')).toBeDefined()
+
+		listMock.mockClear()
+		let respond: (value: unknown) => void = () => {}
+		listMock.mockReturnValue(
+			new Promise((resolve) => {
+				respond = resolve
+			}) as never,
+		)
+		fireEvent.click(screen.getByRole('button', { name: 'Atualizar' }))
+		await waitFor(() =>
+			expect(
+				(
+					screen.getByRole('button', {
+						name: 'Atualizar',
+					}) as HTMLButtonElement
+				).disabled,
+			).toBe(true),
+		)
+		respond(listing(turma1))
+		expect(await screen.findByText('Atualizado agora')).toBeDefined()
+		expect(listMock).toHaveBeenCalledTimes(1)
+		expect(sessionMock).toHaveBeenCalledTimes(1)
+	})
+
+	it('no 429 mostra "Muitas requisições. Aguarde um instante." e "Tentar de novo"', async () => {
+		listReturns({ ok: false, message: messages.tooManyRequests })
+		const screen = await open()
+
+		expect(
+			await screen.findByText('Muitas requisições. Aguarde um instante.'),
+		).toBeDefined()
+		expect(screen.getByRole('button', { name: 'Tentar de novo' })).toBeDefined()
+		expect(screen.queryByText(/^Atualizado/)).toBeNull()
 	})
 })

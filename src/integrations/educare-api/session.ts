@@ -43,11 +43,13 @@ export function sessionExpiredRedirect(currentPath: string) {
 /**
  * Executa `run` com o token da sessão. Sem cookie, ou se a API recusar o token
  * (`401`), apaga o cookie e manda para o login com o aviso de sessão expirada.
+ * No `401`, `forgetSession` descarta o que o servidor do front guardou para ele.
  */
 export async function runWithSession<T>(
 	cookies: Pick<SessionCookies, 'get' | 'clear'>,
 	currentPath: string,
 	run: (token: string) => Promise<T>,
+	forgetSession?: (token: string) => void,
 ): Promise<T> {
 	const token = cookies.get()
 	if (!token) {
@@ -58,6 +60,7 @@ export async function runWithSession<T>(
 		return await run(token)
 	} catch (error) {
 		if (error instanceof ApiError && error.kind === 'unauthorized') {
+			forgetSession?.(token)
 			cookies.clear()
 			throw sessionExpiredRedirect(currentPath)
 		}
