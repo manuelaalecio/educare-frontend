@@ -6,6 +6,7 @@ import {
 	Scripts,
 } from '@tanstack/react-router'
 import { TanStackRouterDevtoolsPanel } from '@tanstack/react-router-devtools'
+import { Analytics } from '@vercel/analytics/react'
 import type { ReactNode } from 'react'
 import { isNotFound, NOT_FOUND_TITLE } from '#/components/layout/not-found'
 import { themeScript } from '#/components/theme/theme-script'
@@ -56,6 +57,7 @@ function RootDocument({ children }: { children: ReactNode }) {
 			<body>
 				{children}
 				<Toaster />
+				<Analytics />
 				<TanStackDevtools
 					config={{
 						position: 'bottom-right',
