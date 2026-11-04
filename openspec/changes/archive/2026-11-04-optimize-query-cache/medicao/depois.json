@@ -1,0 +1,211 @@
+[
+ {
+  "step": "Carga completa de Usuários",
+  "at": "2026-11-04T23:11:49.441Z",
+  "document": {
+   "ttfb": 20,
+   "load": 1243
+  },
+  "serverFn": []
+ },
+ {
+  "step": "Usuários → Turmas",
+  "at": "2026-11-04T23:11:50.999Z",
+  "serverFn": [
+   {
+    "fn": "bcf262bb",
+    "ms": 351
+   }
+  ]
+ },
+ {
+  "step": "Turmas → Início",
+  "at": "2026-11-04T23:11:52.543Z",
+  "serverFn": []
+ },
+ {
+  "step": "Início → Configurações (Usuários)",
+  "at": "2026-11-04T23:11:54.099Z",
+  "serverFn": []
+ },
+ {
+  "step": "Usuários → Turmas (de novo)",
+  "at": "2026-11-04T23:11:55.639Z",
+  "serverFn": []
+ },
+ {
+  "step": "Renomear turma",
+  "at": "2026-11-04T23:11:58.521Z",
+  "serverFn": [
+   {
+    "fn": "4a13c63a",
+    "ms": 581
+   },
+   {
+    "fn": "bcf262bb",
+    "ms": 670
+   }
+  ]
+ },
+ {
+  "step": "Desfazer o nome",
+  "at": "2026-11-04T23:12:00.725Z",
+  "serverFn": [
+   {
+    "fn": "4a13c63a",
+    "ms": 302
+   },
+   {
+    "fn": "bcf262bb",
+    "ms": 309
+   }
+  ]
+ },
+ {
+  "step": "Turmas → Crianças",
+  "at": "2026-11-04T23:12:02.688Z",
+  "serverFn": [
+   {
+    "fn": "87b5eddd",
+    "ms": 368
+   },
+   {
+    "fn": "87b5eddd",
+    "ms": 334
+   }
+  ]
+ },
+ {
+  "step": "Crianças → detalhes",
+  "at": "2026-11-04T23:12:04.862Z",
+  "serverFn": [
+   {
+    "fn": "2c14dc9c",
+    "ms": 324
+   },
+   {
+    "fn": "8d208e61",
+    "ms": 632
+   }
+  ]
+ },
+ {
+  "step": "Detalhes → voltar à lista",
+  "at": "2026-11-04T23:12:06.388Z",
+  "serverFn": []
+ },
+ {
+  "step": "Crianças → página 2",
+  "at": "2026-11-04T23:12:07.908Z",
+  "serverFn": [
+   {
+    "fn": "87b5eddd",
+    "ms": 318
+   }
+  ]
+ },
+ {
+  "step": "Crianças → Início",
+  "at": "2026-11-04T23:12:09.449Z",
+  "serverFn": []
+ },
+ {
+  "step": "Início → Crianças (em menos de 1 min)",
+  "at": "2026-11-04T23:12:11.001Z",
+  "serverFn": []
+ },
+ {
+  "step": "início dos 10 F5",
+  "at": "2026-11-04T23:12:11.906Z"
+ },
+ {
+  "step": "F5 1 em Usuários",
+  "at": "2026-11-04T23:12:14.053Z",
+  "document": {
+   "ttfb": 17,
+   "load": 521
+  },
+  "serverFn": []
+ },
+ {
+  "step": "F5 2 em Usuários",
+  "at": "2026-11-04T23:12:16.284Z",
+  "document": {
+   "ttfb": 16,
+   "load": 550
+  },
+  "serverFn": []
+ },
+ {
+  "step": "F5 3 em Usuários",
+  "at": "2026-11-04T23:12:18.448Z",
+  "document": {
+   "ttfb": 16,
+   "load": 569
+  },
+  "serverFn": []
+ },
+ {
+  "step": "F5 4 em Usuários",
+  "at": "2026-11-04T23:12:21.024Z",
+  "document": {
+   "ttfb": 17,
+   "load": 879
+  },
+  "serverFn": []
+ },
+ {
+  "step": "F5 5 em Usuários",
+  "at": "2026-11-04T23:12:23.110Z",
+  "document": {
+   "ttfb": 16,
+   "load": 501
+  },
+  "serverFn": []
+ },
+ {
+  "step": "F5 6 em Usuários",
+  "at": "2026-11-04T23:12:25.275Z",
+  "document": {
+   "ttfb": 17,
+   "load": 487
+  },
+  "serverFn": []
+ },
+ {
+  "step": "F5 7 em Usuários",
+  "at": "2026-11-04T23:12:27.455Z",
+  "document": {
+   "ttfb": 19,
+   "load": 487
+  },
+  "serverFn": []
+ },
+ {
+  "step": "F5 8 em Usuários",
+  "at": "2026-11-04T23:12:29.619Z",
+  "document": {
+   "ttfb": 17,
+   "load": 488
+  },
+  "serverFn": []
+ },
+ {
+  "step": "F5 9 em Usuários",
+  "at": "2026-11-04T23:12:31.846Z",
+  "document": {
+   "ttfb": 17,
+   "load": 548
+  },
+  "serverFn": []
+ },
+ {
+  "step": "F5 10 em Usuários",
+  "at": "2026-11-04T23:12:33.997Z",
+  "document": {
+   "ttfb": 16,
+   "load": 461
+  },
+  "serverFn": []
+ }
+]

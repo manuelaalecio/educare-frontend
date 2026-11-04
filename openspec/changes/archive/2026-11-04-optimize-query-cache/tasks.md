@@ -28,5 +28,5 @@
 
 ## 5. Fechamento
 
-- [ ] 5.1 Depois do deploy, repetir o roteiro de 1.1 em produção, anexar à tarefa do ClickUp o relatório antes/depois (chamadas e tempos por rota, acertos `cache … hit`) e anotar a memória da função nos logs da Vercel e qualquer atraso entre instâncias observado (D11, D12). Verificar conferindo o relatório anexado à tarefa
+- [x] 5.1 Depois do deploy, repetir o roteiro de 1.1 em produção, anexar à tarefa do ClickUp o relatório antes/depois (chamadas e tempos por rota, acertos `cache … hit`) e anotar a memória da função nos logs da Vercel e qualquer atraso entre instâncias observado (D11, D12). Verificar conferindo o relatório anexado à tarefa
 - [x] 5.2 Rodar `npm run check -- --write`, `npm run typecheck` e `npm test`. Verificar que os três terminam sem erro e que `openspec validate optimize-query-cache --strict` passa
