@@ -1,0 +1,206 @@
+[
+ {
+  "step": "Carga completa de Usuários",
+  "at": "2026-11-04T00:21:15.181Z",
+  "document": {
+   "ttfb": 19,
+   "load": 594
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4f71b9032af7802681a3b561d6810d3fa4591692089cb8787c5f90447",
+    "ms": 283
+   }
+  ]
+ },
+ {
+  "step": "Usuários → Turmas",
+  "at": "2026-11-04T00:21:16.739Z",
+  "serverFn": [
+   {
+    "fn": "bcf262bb6d24a4722d369ee338c6f48871cde5c5f29eab62b25e36452efe6e77",
+    "ms": 279
+   }
+  ]
+ },
+ {
+  "step": "Turmas → Início",
+  "at": "2026-11-04T00:21:18.279Z",
+  "serverFn": []
+ },
+ {
+  "step": "Início → Configurações (Usuários)",
+  "at": "2026-11-04T00:21:19.836Z",
+  "serverFn": [
+   {
+    "fn": "b48994e4f71b9032af7802681a3b561d6810d3fa4591692089cb8787c5f90447",
+    "ms": 299
+   }
+  ]
+ },
+ {
+  "step": "Usuários → Turmas (de novo)",
+  "at": "2026-11-04T00:21:21.384Z",
+  "serverFn": []
+ },
+ {
+  "step": "Turmas → Crianças",
+  "at": "2026-11-04T00:21:22.935Z",
+  "serverFn": [
+   {
+    "fn": "87b5eddd0229d98c1378caf97fb11275aa4229be0f6194b4910ba3fd6e5dcc30",
+    "ms": 279
+   }
+  ]
+ },
+ {
+  "step": "Crianças → Início",
+  "at": "2026-11-04T00:21:24.474Z",
+  "serverFn": []
+ },
+ {
+  "step": "Início → Crianças (em menos de 1 min)",
+  "at": "2026-11-04T00:21:26.032Z",
+  "serverFn": []
+ },
+ {
+  "step": "F5 1 em Usuários",
+  "at": "2026-11-04T00:21:29.235Z",
+  "document": {
+   "ttfb": 16,
+   "load": 369
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4f71b9032af7802681a3b561d6810d3fa4591692089cb8787c5f90447",
+    "ms": 274
+   }
+  ]
+ },
+ {
+  "step": "F5 2 em Usuários",
+  "at": "2026-11-04T00:21:31.473Z",
+  "document": {
+   "ttfb": 16,
+   "load": 357
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4f71b9032af7802681a3b561d6810d3fa4591692089cb8787c5f90447",
+    "ms": 294
+   }
+  ]
+ },
+ {
+  "step": "F5 3 em Usuários",
+  "at": "2026-11-04T00:21:33.722Z",
+  "document": {
+   "ttfb": 17,
+   "load": 366
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4f71b9032af7802681a3b561d6810d3fa4591692089cb8787c5f90447",
+    "ms": 296
+   }
+  ]
+ },
+ {
+  "step": "F5 4 em Usuários",
+  "at": "2026-11-04T00:21:35.964Z",
+  "document": {
+   "ttfb": 18,
+   "load": 362
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4f71b9032af7802681a3b561d6810d3fa4591692089cb8787c5f90447",
+    "ms": 278
+   }
+  ]
+ },
+ {
+  "step": "F5 5 em Usuários",
+  "at": "2026-11-04T00:21:38.199Z",
+  "document": {
+   "ttfb": 17,
+   "load": 359
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4f71b9032af7802681a3b561d6810d3fa4591692089cb8787c5f90447",
+    "ms": 275
+   }
+  ]
+ },
+ {
+  "step": "F5 6 em Usuários",
+  "at": "2026-11-04T00:21:40.443Z",
+  "document": {
+   "ttfb": 18,
+   "load": 362
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4f71b9032af7802681a3b561d6810d3fa4591692089cb8787c5f90447",
+    "ms": 281
+   }
+  ]
+ },
+ {
+  "step": "F5 7 em Usuários",
+  "at": "2026-11-04T00:21:42.686Z",
+  "document": {
+   "ttfb": 17,
+   "load": 353
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4f71b9032af7802681a3b561d6810d3fa4591692089cb8787c5f90447",
+    "ms": 276
+   }
+  ]
+ },
+ {
+  "step": "F5 8 em Usuários",
+  "at": "2026-11-04T00:21:44.948Z",
+  "document": {
+   "ttfb": 19,
+   "load": 368
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4f71b9032af7802681a3b561d6810d3fa4591692089cb8787c5f90447",
+    "ms": 281
+   }
+  ]
+ },
+ {
+  "step": "F5 9 em Usuários",
+  "at": "2026-11-04T00:21:47.206Z",
+  "document": {
+   "ttfb": 17,
+   "load": 362
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4f71b9032af7802681a3b561d6810d3fa4591692089cb8787c5f90447",
+    "ms": 291
+   }
+  ]
+ },
+ {
+  "step": "F5 10 em Usuários",
+  "at": "2026-11-04T00:21:49.444Z",
+  "document": {
+   "ttfb": 18,
+   "load": 364
+  },
+  "serverFn": [
+   {
+    "fn": "b48994e4f71b9032af7802681a3b561d6810d3fa4591692089cb8787c5f90447",
+    "ms": 271
+   }
+  ]
+ }
+]

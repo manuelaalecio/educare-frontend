@@ -7,14 +7,14 @@ import {
 	deleteChild,
 	updateChild,
 } from '#/integrations/educare-api/functions'
+import { invalidates, keysOf } from '#/integrations/educare-api/invalidation'
 import { keys } from '#/integrations/educare-api/queries'
 import type { ChildRequest } from '#/integrations/educare-api/validation'
 
 // Gravações de crianças. Um `{ ok: false }` vira `ApiFieldError`: a mutation
-// falha e o `MutationCache` não invalida nada. No sucesso, ele invalida a raiz
-// das crianças e as turmas (as contagens mudam); nenhum `invalidateQueries`
-// aqui (design, D2 e D3).
-const invalidates = [keys.children, keys.classrooms]
+// falha e o `MutationCache` não invalida nada. No sucesso, ele invalida o que
+// a tabela `invalidates` manda (crianças e turmas); nenhum `invalidateQueries`
+// aqui.
 
 /**
  * No `401`, o `useServerFn` já navegou para o login e devolve `undefined`.
@@ -34,7 +34,7 @@ export function useCreateChild() {
 			if (!result.ok) throw new ApiFieldError(result)
 			return result
 		},
-		meta: { invalidates },
+		meta: { invalidates: keysOf(invalidates.createChild) },
 	})
 }
 
@@ -47,7 +47,7 @@ export function useUpdateChild(id: string) {
 			if (!result.ok) throw new ApiFieldError(result)
 			return result
 		},
-		meta: { invalidates },
+		meta: { invalidates: keysOf(invalidates.updateChild) },
 	})
 }
 
@@ -71,6 +71,6 @@ export function useDeleteChild(id: string) {
 			queryClient.removeQueries({ queryKey: keys.child(id) })
 			return result
 		},
-		meta: { invalidates },
+		meta: { invalidates: keysOf(invalidates.deleteChild) },
 	})
 }

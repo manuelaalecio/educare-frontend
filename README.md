@@ -50,14 +50,16 @@ O front fala com a API do Educare ([`educare-backend`](https://github.com/manuel
 
 - `client.ts`: cliente tipado (`openapi-fetch`) com o `Authorization: Bearer`, tempo limite de 10 s e log sem corpo nem headers. Só pode ser importado no servidor.
 - `errors.ts` e `messages.ts`: conversão das respostas de erro (`ProblemDetail`) em `ApiError` e as mensagens fixas da interface.
-- `functions.ts`: as server functions (`login`, `logout`, `getCurrentUser`, `changeOwnPassword`). A lógica fica em `auth.ts`, testável sem o runtime do Start.
+- `functions.ts`: as server functions (sessão, turmas, usuários e crianças). A lógica fica nos módulos de cada área (`auth.ts`, `classrooms.ts`, `users.ts`, `children.ts`), testáveis sem o runtime do Start.
 - `middleware.ts`: o middleware `authenticated` das server functions que exigem sessão. Num `401` da API, ele apaga o cookie e manda para `/login`.
 
 ### Consultas, gravações e cache
 
-As consultas ficam em `queries.ts` e usam as chaves da fábrica `keys`. Invalidar uma chave invalida também as que começam com ela: `keys.children` pega a lista (todas as páginas e filtros), os detalhes e o histórico de turmas de cada criança. Não escreva chaves soltas no componente; acrescente-as em `keys`.
+As consultas ficam em `queries.ts` e usam as chaves da fábrica `keys` (`keys.ts`). Invalidar uma chave invalida também as que começam com ela: `keys.children` pega a lista (todas as páginas e filtros), os detalhes e o histórico de turmas de cada criança. Não escreva chaves soltas no componente; acrescente-as em `keys`.
 
-Uma gravação (`useMutation`) declara no `meta` as chaves que deixa velhas, e o `MutationCache` do `QueryClient` (em `src/integrations/tanstack-query/root-provider.tsx`) as invalida quando ela dá certo, sem esperar o refetch:
+Cada tipo de dado é reaproveitado pelo tempo de `staleTimes`: sessão e turmas por 5 min, usuários e crianças por 1 min. Depois disso, os dados guardados aparecem na hora e são atualizados em segundo plano. Nenhuma consulta tenta de novo sozinha (`defaultOptions` do `QueryClient`); a tela oferece "Tentar de novo".
+
+O que cada gravação deixa velho fica num só lugar, a tabela `invalidates` de `invalidation.ts`. Ela vale para o navegador e para o cache do servidor do front. Uma gravação (`useMutation`) declara no `meta` as chaves das suas tags, e o `MutationCache` do `QueryClient` (em `src/integrations/tanstack-query/root-provider.tsx`) as invalida quando ela dá certo, sem esperar o refetch:
 
 ```ts
 useMutation({
@@ -66,13 +68,24 @@ useMutation({
 		if (!result.ok) throw new ApiFieldError(result)
 		return result.child
 	},
-	meta: { invalidates: [keys.children, keys.classrooms] },
+	meta: { invalidates: keysOf(invalidates.createChild) },
 })
 ```
 
-O `mutationFn` converte o `{ ok: false }` da server function num `ApiFieldError` (de `errors.ts`, com `kind`, `message` e `fieldErrors`). Assim, uma gravação que falha não invalida nada, e o formulário captura o erro e distribui os `fieldErrors` pelos campos. Componentes novos não chamam `invalidateQueries`; as telas de Turmas e Usuários ainda invalidam à mão, até serem migradas.
+O `mutationFn` converte o `{ ok: false }` da server function num `ApiFieldError` (de `errors.ts`, com `kind`, `message` e `fieldErrors`). Assim, uma gravação que falha não invalida nada, e o formulário captura o erro e distribui os `fieldErrors` pelos campos. Em Turmas e Usuários, `useFormMutation` (`src/components/form-mutation.ts`) faz isso e trata o `404` como sucesso, porque a lista precisa perder a linha que já não existe; `formResult` devolve aos formulários o resultado que eles já tratam. Componentes não chamam `invalidateQueries`.
 
-Uma rota que carrega dados no `loader` (no SSR e no preload) usa `loadQuery(queryClient, options)`. Sem dados em cache, ou com a consulta invalidada por uma gravação, ele espera a busca, e a página já aparece com os dados novos. Com dados, devolve na hora, e o `useQuery` do componente atualiza em segundo plano. Um erro da busca não é lançado: a consulta fica em erro, e o componente mostra a mensagem com "Tentar de novo". Só o redirecionamento de sessão expirada e o `notFound()` seguem para o router.
+Uma rota que carrega dados no `loader` (no SSR e no preload) usa `loadQuery(queryClient, options)`. É o caso de `/criancas/*` e das abas de Configurações. Sem dados em cache, ou com a consulta invalidada por uma gravação, ele espera a busca, e a página já aparece com os dados novos. Com dados, devolve na hora, e o `useQuery` do componente atualiza em segundo plano. Um erro da busca não é lançado: a consulta fica em erro, e o componente (com `retryOnMount: false`) mostra a mensagem com "Tentar de novo". Só o redirecionamento de sessão expirada e o `notFound()` seguem para o router.
+
+### Cache no servidor do front
+
+As leituras de turmas, usuários e crianças em `functions.ts` passam por `server-cache.ts`, um cache só em memória que guarda o resultado `{ ok: true }` por 30 s, com no máximo 500 entradas (descarta a usada há mais tempo). Ele corta as chamadas repetidas do F5: a página chega do SSR com os dados, e os F5 seguidos não vão de novo ao Spring.
+
+- Cada entrada pertence a uma sessão, identificada pelo hash SHA-256 do token inteiro. Uma sessão nunca recebe o que outra buscou. Nunca use o `sub` do JWT como chave: o BFF não confere a assinatura.
+- Uma gravação que passa por `afterWrite(result, invalidates.x)` limpa as tags para todas as sessões, no sucesso e no `404`. O logout, a troca de senha e um `401` limpam a sessão (`forgetSession`).
+- `/auth/me` (`getCurrentUser`) **nunca** passa pelo cache: é ele que revoga a sessão depois de uma troca de senha.
+- Cada instância da função na Vercel tem o próprio cache. Uma gravação atendida por outra instância pode levar até 30 s para aparecer.
+- **Dívida técnica:** "Atualizar" também passa pelo cache, então, dentro dos 30 s, pode trazer a lista guardada mesmo mostrando "Atualizado agora". A correção sugerida está em `openspec/changes/archive/2026-11-04-optimize-query-cache/design.md` (Risks / Trade-offs).
+- Um acerto gera no log `[educare-api] cache <tag> hit`, só com a tag. Nunca registre a chave (pode ter o nome buscado), o token nem o valor. Para medir, conte essas linhas e as `[educare-api] GET …` nos Runtime Logs da Vercel.
 
 ### `EDUCARE_API_URL`
 

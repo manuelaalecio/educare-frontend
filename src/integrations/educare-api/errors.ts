@@ -132,7 +132,7 @@ export function messageFor(error: ApiError): string | undefined {
 		case 'conflict':
 			return error.detail ?? messages.conflict
 		case 'too-many-requests':
-			return messages.tooManyAttempts
+			return messages.tooManyRequests
 	}
 }
 

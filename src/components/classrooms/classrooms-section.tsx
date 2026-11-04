@@ -1,5 +1,4 @@
-import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { useServerFn } from '@tanstack/react-start'
+import { useQuery } from '@tanstack/react-query'
 import { CircleAlert, Plus } from 'lucide-react'
 import { type RefObject, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -13,22 +12,24 @@ import {
 	DialogTitle,
 } from '#/components/ui/dialog'
 import { Skeleton } from '#/components/ui/skeleton'
+import { UpdatedAt } from '#/components/updated-at'
 import type {
 	Classroom,
 	ClassroomResult,
 } from '#/integrations/educare-api/classrooms'
-import {
-	createClassroom,
-	deleteClassroom,
-	renameClassroom,
-} from '#/integrations/educare-api/functions'
 import { messages } from '#/integrations/educare-api/messages'
 import { classroomsQuery } from '#/integrations/educare-api/queries'
+import { formResult } from '../form-mutation'
 import { ClassroomForm } from './classroom-form'
 import { ClassroomList } from './classroom-list'
 import { ClassroomTable } from './classroom-table'
 import { DeleteClassroomConfirm } from './delete-classroom-dialog'
 import { classroomCountLabel, nextClassroomPlaceholder } from './format'
+import {
+	useCreateClassroom,
+	useDeleteClassroom,
+	useRenameClassroom,
+} from './mutations'
 
 type DialogState =
 	| { type: 'create' }
@@ -42,11 +43,11 @@ const successMessage = {
 
 /** Aba Configurações › Turmas: lista, estados e os modais de turma. */
 export function ClassroomsSection() {
-	const queryClient = useQueryClient()
-	const query = useQuery(classroomsQuery)
-	const createFn = useServerFn(createClassroom)
-	const renameFn = useServerFn(renameClassroom)
-	const deleteFn = useServerFn(deleteClassroom)
+	// Um erro vindo do `loader` aparece direto, sem uma segunda chamada.
+	const query = useQuery({ ...classroomsQuery, retryOnMount: false })
+	const create = useCreateClassroom()
+	const rename = useRenameClassroom()
+	const remove = useDeleteClassroom()
 
 	// `dialog` continua preenchido depois de fechar, para o conteúdo não sumir
 	// durante a animação de saída.
@@ -71,10 +72,11 @@ export function ClassroomsSection() {
 		setOpen(true)
 	}
 
+	// A lista é buscada de novo pelo `MutationCache` (sucesso ou `404`).
 	async function run(call: () => Promise<ClassroomResult>) {
 		setPending(true)
 		try {
-			return await call()
+			return await formResult(call())
 		} finally {
 			setPending(false)
 		}
@@ -86,7 +88,6 @@ export function ClassroomsSection() {
 		setOpen(false)
 		if (notFound) toast.error(messages.classroomNotFound)
 		else toast.success(successMessage[type])
-		void queryClient.invalidateQueries({ queryKey: classroomsQuery.queryKey })
 	}
 
 	const close = () => setOpen(false)
@@ -120,6 +121,16 @@ export function ClassroomsSection() {
 					Nova turma
 				</Button>
 			</div>
+
+			{query.isSuccess && (
+				<div className='flex justify-end px-4 pb-2 md:px-6'>
+					<UpdatedAt
+						updatedAt={query.dataUpdatedAt}
+						refreshing={query.isFetching}
+						onRefresh={() => void query.refetch()}
+					/>
+				</div>
+			)}
 
 			{query.isPending && <LoadingRows />}
 
@@ -206,11 +217,11 @@ export function ClassroomsSection() {
 							cancelRef={cancelRef}
 							onCancel={close}
 							onDone={done}
-							create={(values) => run(() => createFn({ data: values }))}
+							create={(values) => run(() => create.mutateAsync(values))}
 							rename={(id, values) =>
-								run(() => renameFn({ data: { id, ...values } }))
+								run(() => rename.mutateAsync({ id, ...values }))
 							}
-							remove={(id) => run(() => deleteFn({ data: { id } }))}
+							remove={(id) => run(() => remove.mutateAsync(id))}
 						/>
 					</DialogContent>
 				)}
@@ -306,6 +317,24 @@ function Header({
 			<DialogTitle className='text-xl font-extrabold'>{title}</DialogTitle>
 			<DialogDescription>{description}</DialogDescription>
 		</DialogHeader>
+	)
+}
+
+/** A aba enquanto o `loader` busca a lista pela primeira vez. */
+export function ClassroomsPending() {
+	return (
+		<section
+			aria-labelledby='titulo-cfg-turmas'
+			aria-busy='true'
+			className='flex flex-col overflow-hidden rounded-xl border bg-card text-card-foreground'
+		>
+			<div className='p-4 md:p-6'>
+				<h2 id='titulo-cfg-turmas' className='text-base font-bold'>
+					Turmas
+				</h2>
+			</div>
+			<LoadingRows />
+		</section>
 	)
 }
 

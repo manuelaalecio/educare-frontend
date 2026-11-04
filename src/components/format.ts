@@ -18,3 +18,10 @@ const createdAtFormat = new Intl.DateTimeFormat('pt-BR', {
 export function formatCreatedAt(createdAt: string) {
 	return createdAtFormat.format(new Date(createdAt))
 }
+
+/** "Atualizado agora" (menos de 1 min) ou "Atualizado há N min". */
+export function updatedAtLabel(updatedAt: number, now: number) {
+	const minutes = Math.floor((now - updatedAt) / 60_000)
+	if (minutes < 1) return 'Atualizado agora'
+	return `Atualizado há ${minutes} min`
+}

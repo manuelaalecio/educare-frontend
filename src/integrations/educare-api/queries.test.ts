@@ -16,8 +16,8 @@ import {
 	currentUserQuery,
 	keys,
 	loadQuery,
+	staleTimes,
 	usersQuery,
-	usersQueryKey,
 } from './queries'
 
 vi.mock('./functions', () => ({
@@ -34,14 +34,36 @@ describe('keys', () => {
 		expect(keys.session).toEqual(['educare-api', 'session'])
 		expect(keys.classrooms).toEqual(['educare-api', 'classrooms'])
 		expect(keys.users).toEqual(['educare-api', 'users'])
-		expect(usersQueryKey).toEqual(['educare-api', 'users'])
 		expect(currentUserQuery.queryKey).toEqual(keys.session)
 		expect(classroomsQuery.queryKey).toEqual(keys.classrooms)
 		expect(usersQuery(2).queryKey).toEqual(['educare-api', 'users', 2])
 	})
 
-	it('guarda as turmas por 5 minutos', () => {
+	it('reaproveita cada tipo de dado pelo seu tempo', () => {
+		expect(currentUserQuery.staleTime).toBe(5 * 60_000)
 		expect(classroomsQuery.staleTime).toBe(5 * 60_000)
+		expect(usersQuery(1).staleTime).toBe(60_000)
+		expect(childrenQuery({ pagina: 1 }).staleTime).toBe(60_000)
+		expect(childQuery('c1').staleTime).toBe(60_000)
+		expect(staleTimes).toEqual({
+			session: 5 * 60_000,
+			classrooms: 5 * 60_000,
+			users: 60_000,
+			children: 60_000,
+		})
+	})
+
+	it('o QueryClient não tenta de novo uma consulta que falhou', async () => {
+		const queryClient = createQueryClient()
+		const queryFn = vi.fn(async () => {
+			throw new Error('indisponível')
+		})
+		await expect(
+			queryClient.fetchQuery({ queryKey: ['teste'], queryFn }),
+		).rejects.toThrow('indisponível')
+		const observer = queryClient.getQueryCache().find({ queryKey: ['teste'] })
+		expect(observer?.options.retry).toBe(false)
+		expect(queryFn).toHaveBeenCalledTimes(1)
 	})
 
 	it('põe lista, detalhe e histórico de crianças sob keys.children', () => {

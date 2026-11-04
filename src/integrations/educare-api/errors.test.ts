@@ -82,7 +82,7 @@ describe('toApiError', () => {
 		expect(toApiError(400, { title: 'Bad Request' }).kind).toBe('unavailable')
 	})
 
-	it('converte 429 na mensagem de muitas tentativas, sem o detail', () => {
+	it('converte 429 na mensagem de muitas requisições, sem o detail', () => {
 		const error = toApiError(429, {
 			title: 'Too Many Requests',
 			status: 429,
@@ -91,16 +91,16 @@ describe('toApiError', () => {
 		expect(error.kind).toBe('too-many-requests')
 		expect(toFormError(error)).toEqual({
 			kind: 'too-many-requests',
-			message: messages.tooManyAttempts,
+			message: messages.tooManyRequests,
 			fieldErrors: {},
 		})
 	})
 
-	it('converte 429 sem ProblemDetail em muitas tentativas', () => {
+	it('converte 429 sem ProblemDetail em muitas requisições', () => {
 		const error = toApiError(429, 'Too Many Requests')
 		expect(error.kind).toBe('too-many-requests')
 		expect(toFormError(error).message).toBe(
-			'Muitas tentativas. Tente novamente em alguns minutos.',
+			'Muitas requisições. Aguarde um instante.',
 		)
 	})
 

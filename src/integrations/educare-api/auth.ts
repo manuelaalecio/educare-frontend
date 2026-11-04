@@ -21,6 +21,12 @@ export type CurrentUser = Pick<
 
 type AccessToken = components['schemas']['AccessTokenResponse']
 
+/**
+ * Descarta o que o servidor do front guardou para a sessão do token. Injetado
+ * por `functions.ts`, para este módulo não depender do cache do servidor.
+ */
+type ForgetSession = (token: string) => void
+
 /** `expired`: havia cookie, mas a API recusou o token. */
 export type Session = { user: CurrentUser | null; expired: boolean }
 
@@ -51,8 +57,11 @@ export async function performLogin(
 }
 
 export function performLogout(deps: {
-	cookies: Pick<SessionCookies, 'clear'>
+	cookies: Pick<SessionCookies, 'get' | 'clear'>
+	forgetSession?: ForgetSession
 }): { ok: true } {
+	const token = deps.cookies.get()
+	if (token) deps.forgetSession?.(token)
 	deps.cookies.clear()
 	return { ok: true }
 }
@@ -60,6 +69,7 @@ export function performLogout(deps: {
 export async function fetchSession(deps: {
 	api: (token: string) => Pick<Api, 'GET'>
 	cookies: Pick<SessionCookies, 'get' | 'clear'>
+	forgetSession?: ForgetSession
 }): Promise<Session> {
 	const token = deps.cookies.get()
 	if (!token) return { user: null, expired: false }
@@ -77,6 +87,7 @@ export async function fetchSession(deps: {
 		}
 	} catch (error) {
 		if (error instanceof ApiError && error.kind === 'unauthorized') {
+			deps.forgetSession?.(token)
 			deps.cookies.clear()
 			return { user: null, expired: true }
 		}
@@ -85,7 +96,11 @@ export async function fetchSession(deps: {
 }
 
 export async function performChangePassword(
-	deps: { api: Pick<Api, 'PUT'>; cookies: Pick<SessionCookies, 'set'> },
+	deps: {
+		api: Pick<Api, 'PUT'>
+		cookies: Pick<SessionCookies, 'get' | 'set'>
+		forgetSession?: ForgetSession
+	},
 	values: Pick<ChangePasswordValues, 'currentPassword' | 'newPassword'>,
 ): Promise<FormResult> {
 	try {
@@ -97,7 +112,10 @@ export async function performChangePassword(
 				},
 			}),
 		)
-		// A API invalida os tokens anteriores e devolve um novo para esta sessão.
+		// A API invalida os tokens anteriores: o que o token antigo guardou no
+		// servidor do front sai junto. Ele devolve um novo para esta sessão.
+		const previous = deps.cookies.get()
+		if (previous) deps.forgetSession?.(previous)
 		// Sem corpo (o 204 do contrato antigo), o cookie atual continua valendo.
 		if (renewed?.accessToken && renewed.expiresIn) {
 			deps.cookies.set(renewed.accessToken, renewed.expiresIn)
@@ -106,6 +124,11 @@ export async function performChangePassword(
 	} catch (error) {
 		// O 401 segue para o middleware, que encerra a sessão.
 		if (error instanceof ApiError && error.kind === 'unauthorized') throw error
-		return { ok: false, ...toFormError(error) }
+		const failure = toFormError(error)
+		// O limite da troca de senha é por tentativas, não o limite geral.
+		if (failure.kind === 'too-many-requests') {
+			failure.message = messages.tooManyAttempts
+		}
+		return { ok: false, ...failure }
 	}
 }

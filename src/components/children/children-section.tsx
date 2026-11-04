@@ -6,6 +6,7 @@ import { type ReactNode, useEffect } from 'react'
 import { Alert, AlertDescription } from '#/components/ui/alert'
 import { Button, buttonVariants } from '#/components/ui/button'
 import { Skeleton } from '#/components/ui/skeleton'
+import { UpdatedAt } from '#/components/updated-at'
 import { Pagination } from '#/components/users/pagination'
 import {
 	type ChildFilters,
@@ -17,7 +18,6 @@ import { ChildCards } from './child-cards'
 import { ChildTable } from './child-table'
 import { ChildrenFilters } from './children-filters'
 import { childCountLabel } from './format'
-import { UpdatedAt } from './updated-at'
 
 export type ChildrenSectionProps = {
 	filters: ChildFilters

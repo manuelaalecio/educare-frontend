@@ -93,7 +93,7 @@ Toda página protegida SHALL mostrar no cabeçalho, no botão do menu do usuári
 - **THEN** o botão do menu do usuário mostra "AS" e tem o nome acessível "Menu do usuário: Ana Souza"
 
 ### Requirement: Logout
-O item "Sair" do menu do usuário e o botão "Sair" da barra lateral SHALL apagar o cookie de sessão, descartar todos os dados da API em cache no navegador e levar o usuário a `/login`, sem o parâmetro `redirect`. Depois do logout, voltar no histórico do navegador SHALL NOT mostrar dados da sessão encerrada.
+O item "Sair" do menu do usuário e o botão "Sair" da barra lateral SHALL apagar o cookie de sessão, descartar todos os dados da API em cache no navegador, descartar os dados da sessão guardados no servidor do frontend e levar o usuário a `/login`, sem o parâmetro `redirect`. Depois do logout, voltar no histórico do navegador SHALL NOT mostrar dados da sessão encerrada, e quem entrar em seguida no mesmo navegador SHALL NOT ver dados da sessão anterior, nem do cache do navegador nem do servidor do frontend.
 
 #### Scenario: Sair
 - **WHEN** a usuária `ana.souza@educare.org`, logada, abre o menu do usuário e escolhe "Sair"
@@ -106,6 +106,10 @@ O item "Sair" do menu do usuário e o botão "Sair" da barra lateral SHALL apaga
 #### Scenario: Voltar após sair
 - **WHEN** a usuária sai e usa o botão "voltar" do navegador para `/`
 - **THEN** ela é levada a `/login?redirect=%2F`, sem ver o nome dela nem outros dados
+
+#### Scenario: Outra pessoa entra no mesmo navegador
+- **WHEN** a coordenadora `ana.souza@educare.org` abre as listas de turmas e de usuários, sai, e o educador `carlos.lima@educare.org` entra no mesmo navegador e abre `/criancas`
+- **THEN** nenhuma lista da sessão de Ana aparece para Carlos, e as chamadas da sessão de Carlos vão à API com o token dele
 
 ### Requirement: Trocar a própria senha
 O botão "Alterar senha" da página `/minha-conta` SHALL abrir um modal com o título "Alterar senha", o texto "Confirme sua senha atual e escolha uma nova.", os campos "Senha atual", "Nova senha" e "Confirmar nova senha", o aviso "Você continua conectado aqui. Os outros dispositivos precisarão entrar de novo com a nova senha." e os botões "Cancelar" e "Alterar senha". O modal SHALL abrir com os campos vazios e o foco em "Senha atual", SHALL manter o foco do teclado dentro dele enquanto estiver aberto e, ao fechar, SHALL devolver o foco ao botão "Alterar senha" da página.

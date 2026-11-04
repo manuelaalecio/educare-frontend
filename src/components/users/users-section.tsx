@@ -1,6 +1,5 @@
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { useRouter } from '@tanstack/react-router'
-import { useServerFn } from '@tanstack/react-start'
 import { CircleAlert, Plus } from 'lucide-react'
 import { type RefObject, useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
@@ -14,25 +13,23 @@ import {
 	DialogTitle,
 } from '#/components/ui/dialog'
 import { Skeleton } from '#/components/ui/skeleton'
-import {
-	createUser,
-	deleteUser,
-	resetUserPassword,
-	updateUser,
-} from '#/integrations/educare-api/functions'
+import { UpdatedAt } from '#/components/updated-at'
 import { messages } from '#/integrations/educare-api/messages'
-import {
-	currentUserQuery,
-	usersQuery,
-	usersQueryKey,
-} from '#/integrations/educare-api/queries'
+import { keys, usersQuery } from '#/integrations/educare-api/queries'
 import type { User, UserResult } from '#/integrations/educare-api/users'
 import type {
 	CreateUserValues,
 	ResetPasswordFormValues,
 } from '#/integrations/educare-api/validation'
+import { formResult } from '../form-mutation'
 import { DeleteUserConfirm } from './delete-user-dialog'
 import { userCountLabel } from './format'
+import {
+	useCreateUser,
+	useDeleteUser,
+	useResetUserPassword,
+	useUpdateUser,
+} from './mutations'
 import { Pagination } from './pagination'
 import { ResetPasswordForm } from './reset-password-form'
 import { UserForm } from './user-form'
@@ -66,11 +63,12 @@ export function UsersSection({
 }: UsersSectionProps) {
 	const queryClient = useQueryClient()
 	const router = useRouter()
-	const query = useQuery(usersQuery(page))
-	const createFn = useServerFn(createUser)
-	const updateFn = useServerFn(updateUser)
-	const resetFn = useServerFn(resetUserPassword)
-	const deleteFn = useServerFn(deleteUser)
+	// Um erro vindo do `loader` aparece direto, sem uma segunda chamada.
+	const query = useQuery({ ...usersQuery(page), retryOnMount: false })
+	const create = useCreateUser()
+	const update = useUpdateUser()
+	const reset = useResetUserPassword()
+	const remove = useDeleteUser()
 
 	// `dialog` continua preenchido depois de fechar, para o conteúdo não sumir
 	// durante a animação de saída.
@@ -107,10 +105,11 @@ export function UsersSection({
 		setOpen(true)
 	}
 
+	// A lista é buscada de novo pelo `MutationCache` (sucesso ou `404`).
 	async function run(call: () => Promise<UserResult>) {
 		setPending(true)
 		try {
-			return await call()
+			return await formResult(call())
 		} finally {
 			setPending(false)
 		}
@@ -122,7 +121,6 @@ export function UsersSection({
 		setOpen(false)
 		if (notFound) toast.error(messages.userNotFound)
 		else toast.success(successMessage[type])
-		void queryClient.invalidateQueries({ queryKey: usersQueryKey })
 		// Editar a si mesmo muda a sessão: o `beforeLoad` de Configurações roda
 		// de novo e tira daqui quem deixou de ser coordenador(a).
 		if (
@@ -131,9 +129,7 @@ export function UsersSection({
 			dialog?.type === 'edit' &&
 			dialog.user.id === currentUserId
 		) {
-			await queryClient.invalidateQueries({
-				queryKey: currentUserQuery.queryKey,
-			})
+			await queryClient.invalidateQueries({ queryKey: keys.session })
 			await router.invalidate()
 		}
 	}
@@ -178,6 +174,16 @@ export function UsersSection({
 					Novo usuário
 				</Button>
 			</div>
+
+			{data && !query.isError && (
+				<div className='flex justify-end px-4 pb-2 md:px-6'>
+					<UpdatedAt
+						updatedAt={query.dataUpdatedAt}
+						refreshing={query.isFetching}
+						onRefresh={() => void query.refetch()}
+					/>
+				</div>
+			)}
 
 			{query.isPending && <LoadingRows />}
 
@@ -248,25 +254,23 @@ export function UsersSection({
 							cancelRef={cancelRef}
 							onCancel={close}
 							onDone={done}
-							create={(values) => run(() => createFn({ data: values }))}
+							create={(values) => run(() => create.mutateAsync(values))}
 							update={(user, values) =>
 								run(() =>
-									updateFn({
-										data: {
-											id: user.id,
-											name: values.name,
-											login: values.login,
-											role: values.role,
-											currentRole: user.role,
-											currentLogin: user.login,
-										},
+									update.mutateAsync({
+										id: user.id,
+										name: values.name,
+										login: values.login,
+										role: values.role,
+										currentRole: user.role,
+										currentLogin: user.login,
 									}),
 								)
 							}
 							reset={(user, values) =>
-								run(() => resetFn({ data: { id: user.id, ...values } }))
+								run(() => reset.mutateAsync({ id: user.id, ...values }))
 							}
-							remove={(user) => run(() => deleteFn({ data: { id: user.id } }))}
+							remove={(user) => run(() => remove.mutateAsync(user.id))}
 						/>
 					</DialogContent>
 				)}
@@ -382,6 +386,24 @@ function Header({
 			<DialogTitle className='text-xl font-extrabold'>{title}</DialogTitle>
 			<DialogDescription>{description}</DialogDescription>
 		</DialogHeader>
+	)
+}
+
+/** A aba enquanto o `loader` busca a lista pela primeira vez. */
+export function UsersPending() {
+	return (
+		<section
+			aria-labelledby='titulo-cfg-usuarios'
+			aria-busy='true'
+			className='flex flex-col overflow-hidden rounded-xl border bg-card text-card-foreground'
+		>
+			<div className='p-4 md:p-6'>
+				<h2 id='titulo-cfg-usuarios' className='text-base font-bold'>
+					Usuários
+				</h2>
+			</div>
+			<LoadingRows />
+		</section>
 	)
 }
 
